@@ -47,8 +47,19 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Test
-        run: dotnet test --no-build --configuration Release --logger "trx" --results-directory TestResults
+      - name: Test (in-memory SQLite)
+        run: dotnet test --no-build --configuration Release --logger "trx" --results-directory TestResults/sqlite
+
+      - name: Test API against a real SQL Server
+        env:
+          BUGTRACKER_TEST_SQLSERVER: "Server=localhost,1433;User Id=sa;Password=Ci#Only-Passw0rd;TrustServerCertificate=True"
+        run: >
+          dotnet test tests/BugTracker.IntegrationTests --no-build --configuration Release
+          --logger "trx" --results-directory TestResults/sqlserver
+
+      - name: Report failed tests
+        if: failure()
+        run: python3 .github/scripts/report-failed-tests.py TestResults
 
       - name: Check formatting
         run: dotnet format --verify-no-changes --no-restore

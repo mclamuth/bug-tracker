@@ -27,6 +27,12 @@ public interface ICurrentUser
     int UserId { get; }
 }
 
+/// <summary>Hands out ticket numbers (BT-1001, BT-1002, …) from a database sequence.</summary>
+public interface ITicketNumbers
+{
+    Task<int> NextAsync(CancellationToken ct);
+}
+
 /// <summary>Testable clock so code never calls DateTime.UtcNow directly.</summary>
 public interface IClock
 {

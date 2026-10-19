@@ -140,6 +140,9 @@ namespace BugTracker.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<byte>("Kind")
+                        .HasColumnType("tinyint");
+
                     b.Property<string>("LastError")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
@@ -164,6 +167,8 @@ namespace BugTracker.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(320)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TicketId");
 
                     b.HasIndex("Status", "CreatedAt");
 
@@ -992,6 +997,16 @@ namespace BugTracker.Infrastructure.Data.Migrations
                     b.Navigation("Comment");
 
                     b.Navigation("MentionedUser");
+                });
+
+            modelBuilder.Entity("BugTracker.Domain.EmailOutbox", b =>
+                {
+                    b.HasOne("BugTracker.Domain.Ticket", "Ticket")
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Ticket");
                 });
 
             modelBuilder.Entity("BugTracker.Domain.StatusTransition", b =>

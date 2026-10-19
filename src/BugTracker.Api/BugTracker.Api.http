@@ -1,0 +1,94 @@
+# Try the API from VS Code: install the "REST Client" extension, start the API
+# (Terminal → Run Task… → api: run), then click "Send Request" above any request.
+# Development sign-in: change @me to act as someone else (ids are in the table at the end).
+
+@api = http://localhost:5011/api/v1
+@me = 6
+
+### Who am I?
+GET {{api}}/me
+X-Dev-User-Id: {{me}}
+
+### Create a defect (as Elyse). Unassigned, so it starts as New and Ken is emailed.
+# @name created
+POST {{api}}/tickets
+X-Dev-User-Id: {{me}}
+Content-Type: application/json
+
+{
+  "type": "Defect",
+  "applicationId": 19,
+  "title": "Mileage total doubles when a trip is edited",
+  "description": "Editing a submitted trip adds the new mileage to the old amount.",
+  "endUserName": "Diane Cole, Membership",
+  "stepsToReproduce": "1. Open an expense report\n2. Edit a mileage trip\n3. Look at the total",
+  "expectedResult": "The total reflects the new distance",
+  "actualResult": "Old and new amounts are added together",
+  "environment": "Production",
+  "severity": "High",
+  "priority": "P2High"
+}
+
+### The ticket just created
+@number = {{created.response.body.number}}
+GET {{api}}/tickets/{{number}}
+X-Dev-User-Id: {{me}}
+
+### Ken triages it: assign to Max in one step (Max is emailed)
+POST {{api}}/tickets/{{number}}/transitions
+X-Dev-User-Id: 11
+Content-Type: application/json
+
+{ "toStatusId": 3, "assigneeId": 1 }
+
+### Max starts work
+POST {{api}}/tickets/{{number}}/transitions
+X-Dev-User-Id: 1
+Content-Type: application/json
+
+{ "toStatusId": 4 }
+
+### Max comments and @mentions Elyse (Elyse is emailed)
+POST {{api}}/tickets/{{number}}/comments
+X-Dev-User-Id: 1
+Content-Type: application/json
+
+{ "body": "@Elyse Orris fixed in Test, please retest." }
+
+### Max sends it to testing (Elyse, the reporter, is emailed)
+POST {{api}}/tickets/{{number}}/transitions
+X-Dev-User-Id: 1
+Content-Type: application/json
+
+{ "toStatusId": 5, "comment": "The edit now replaces the old distance." }
+
+### Elyse verifies, then closes it
+POST {{api}}/tickets/{{number}}/transitions
+X-Dev-User-Id: {{me}}
+Content-Type: application/json
+
+{ "toStatusId": 6 }
+
+###
+POST {{api}}/tickets/{{number}}/transitions
+X-Dev-User-Id: {{me}}
+Content-Type: application/json
+
+{ "toStatusId": 7 }
+
+### Everything that changed, newest first
+GET {{api}}/tickets/{{number}}/history
+X-Dev-User-Id: {{me}}
+
+### Open tickets, most recently updated first
+GET {{api}}/tickets?view=open&sort=updated
+X-Dev-User-Id: {{me}}
+
+### Search by number or words
+GET {{api}}/tickets?view=all&search=mileage
+X-Dev-User-Id: {{me}}
+
+### Status ids: 1 New, 2 Triaged, 3 Assigned, 4 In Progress, 5 Ready for Test,
+### 6 Verified, 7 Closed, 8 Reopened, 9 Won't Fix
+### People: 1 Max, 2 Bobby, 3 Hue, 4 Shyamal, 5 Michael, 6 Elyse, 7 Josh,
+### 8 Val, 9 Jeff, 10 Greg, 11 Ken

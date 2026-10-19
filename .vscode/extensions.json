@@ -6,6 +6,7 @@
     "oxc.oxc-vscode",
     "esbenp.prettier-vscode",
     "editorconfig.editorconfig",
-    "vitest.explorer"
+    "vitest.explorer",
+    "humao.rest-client"
   ]
 }
