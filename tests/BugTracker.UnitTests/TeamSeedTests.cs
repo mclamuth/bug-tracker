@@ -35,4 +35,15 @@ public sealed class TeamSeedTests
         Assert.Equal(22, SeedData.Applications.Length);
         Assert.All(SeedData.Applications, a => Assert.Contains(a.DefaultAssigneeId!.Value, developerIds));
     }
+
+    [Fact]
+    public void Launcher_links_are_https_addresses()
+    {
+        var links = SeedData.Applications.Where(a => a.LauncherUrl is not null).ToList();
+
+        Assert.Equal(["Overtime", "Staff Expense", "Training", "Vacation Sick Leave"], links.Select(a => a.Name));
+        Assert.All(links, a => Assert.True(
+            Uri.TryCreate(a.LauncherUrl, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps,
+            $"{a.Name}: {a.LauncherUrl}"));
+    }
 }

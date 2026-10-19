@@ -731,6 +731,7 @@ namespace BugTracker.Infrastructure.Data.Migrations
                             DefaultAssigneeId = 3,
                             Description = "Overtime requests, approvals, and tracking",
                             IsActive = true,
+                            LauncherUrl = "https://ctaovertime.azurewebsites.net/",
                             Name = "Overtime"
                         },
                         new
@@ -747,6 +748,7 @@ namespace BugTracker.Infrastructure.Data.Migrations
                             DefaultAssigneeId = 1,
                             Description = "Staff expense reporting and reimbursement",
                             IsActive = true,
+                            LauncherUrl = "https://ctastaffexpense.azurewebsites.net/",
                             Name = "Staff Expense"
                         },
                         new
@@ -763,6 +765,7 @@ namespace BugTracker.Infrastructure.Data.Migrations
                             DefaultAssigneeId = 4,
                             Description = "Staff training registration and records",
                             IsActive = true,
+                            LauncherUrl = "https://training.cta.org/",
                             Name = "Training"
                         },
                         new
@@ -771,6 +774,7 @@ namespace BugTracker.Infrastructure.Data.Migrations
                             DefaultAssigneeId = 2,
                             Description = "Employee vacation and sick leave requests",
                             IsActive = true,
+                            LauncherUrl = "https://vslcta.azurewebsites.net/",
                             Name = "Vacation Sick Leave"
                         });
                 });

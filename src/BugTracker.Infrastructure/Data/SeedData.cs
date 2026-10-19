@@ -109,12 +109,12 @@ public static class SeedData
         App(14, "Office Services Reports", "Office services reporting and dashboards", MaxCaber),
         App(15, "Option Management", "Employee option selection and administration", BobbyMcDonald),
         App(16, "Organizing Grant App", "Organizing grant applications and approvals", ShyamalGurazada),
-        App(17, "Overtime", "Overtime requests, approvals, and tracking", HueChi),
+        App(17, "Overtime", "Overtime requests, approvals, and tracking", HueChi, "https://ctaovertime.azurewebsites.net/"),
         App(18, "RIF", "Reduction in force case management", MichaelLamuth),
-        App(19, "Staff Expense", "Staff expense reporting and reimbursement", MaxCaber),
+        App(19, "Staff Expense", "Staff expense reporting and reimbursement", MaxCaber, "https://ctastaffexpense.azurewebsites.net/"),
         App(20, "Tire Request", "Vehicle tire requests and fulfillment", MichaelLamuth),
-        App(21, "Training", "Staff training registration and records", ShyamalGurazada),
-        App(22, "Vacation Sick Leave", "Employee vacation and sick leave requests", BobbyMcDonald),
+        App(21, "Training", "Staff training registration and records", ShyamalGurazada, "https://training.cta.org/"),
+        App(22, "Vacation Sick Leave", "Employee vacation and sick leave requests", BobbyMcDonald, "https://vslcta.azurewebsites.net/"),
     ];
 
     private static StatusTransition Move(int from, int to, bool comment = false, bool assignee = false, bool resolution = false) =>
@@ -123,6 +123,6 @@ public static class SeedData
     private static User Person(int id, string name, string email, bool developer = false, bool ica = false, bool supervisor = false) =>
         new() { Id = id, DisplayName = name, Email = email, IsDeveloper = developer, IsIca = ica, IsSupervisor = supervisor, IsActive = true };
 
-    private static TrackedApplication App(int id, string name, string description, int defaultAssigneeId) =>
-        new() { Id = id, Name = name, Description = description, DefaultAssigneeId = defaultAssigneeId, IsActive = true };
+    private static TrackedApplication App(int id, string name, string description, int defaultAssigneeId, string? launcherUrl = null) =>
+        new() { Id = id, Name = name, Description = description, DefaultAssigneeId = defaultAssigneeId, LauncherUrl = launcherUrl, IsActive = true };
 }
