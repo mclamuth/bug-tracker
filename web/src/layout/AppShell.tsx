@@ -29,9 +29,11 @@ import { ApiError } from '../api/client'
 import { useMe } from '../api/queries'
 import { roleLabel } from '../api/types'
 import { useAuth } from '../auth/authContext'
+import { BrandLogo } from '../components/BrandLogo'
 import { AppLauncher } from './AppLauncher'
 
 const TOP_BAR = '64px'
+const SEARCH_BAR = '52px'
 const SIDEBAR = '232px'
 
 const useStyles = makeStyles({
@@ -41,18 +43,33 @@ const useStyles = makeStyles({
     height: TOP_BAR,
     zIndex: 30,
     display: 'grid',
-    gridTemplateColumns: '1fr minmax(240px, 500px) 1fr',
+    gridTemplateColumns: '1fr auto 1fr',
     alignItems: 'center',
     backgroundColor: tokens.colorBrandBackground,
     color: tokens.colorNeutralForegroundOnBrand,
   },
   topLeft: { display: 'flex', alignItems: 'center', height: TOP_BAR },
   appName: { padding: '0 18px', fontSize: tokens.fontSizeBase400, fontWeight: tokens.fontWeightSemibold },
-  search: {
-    width: '100%',
-    // Stay white on the blue bar, including while search is switched off.
+  logo: { display: 'flex', alignItems: 'center' },
+  searchBar: {
+    position: 'fixed',
+    top: TOP_BAR,
+    left: SIDEBAR,
+    right: 0,
+    height: SEARCH_BAR,
+    zIndex: 15,
+    display: 'flex',
+    alignItems: 'center',
+    padding: '0 32px',
     backgroundColor: tokens.colorNeutralBackground1,
-    ':hover': { backgroundColor: tokens.colorNeutralBackground1 },
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+  search: {
+    width: 'min(520px, 48vw)',
+    maxWidth: 'none',
+    // Light grey field, as in the design, including while search is switched off.
+    backgroundColor: tokens.colorNeutralBackground3,
+    ':hover': { backgroundColor: tokens.colorNeutralBackground3 },
   },
   topRight: { justifySelf: 'end', paddingRight: '16px' },
   userButton: {
@@ -63,6 +80,7 @@ const useStyles = makeStyles({
   },
   userText: { display: 'grid', textAlign: 'left', lineHeight: '1.2', marginLeft: '6px' },
   userRole: { color: 'rgba(255,255,255,.8)' },
+  userAvatar: { backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorBrandForeground1 },
   sidebar: {
     position: 'fixed',
     inset: `${TOP_BAR} auto 0 0`,
@@ -111,7 +129,7 @@ const useStyles = makeStyles({
   },
   main: {
     marginLeft: SIDEBAR,
-    paddingTop: TOP_BAR,
+    paddingTop: `calc(${TOP_BAR} + ${SEARCH_BAR})`,
     minHeight: '100vh',
     backgroundColor: tokens.colorNeutralBackground2,
   },
@@ -154,20 +172,16 @@ export function AppShell() {
           <AppLauncher />
           <span className={styles.appName}>ISSD Bug Tracker</span>
         </div>
-        <SearchBox
-          className={styles.search}
-          placeholder="Search tickets by number or title"
-          aria-label="Search tickets"
-          disabled
-          title="Ticket search arrives with the ticket list (Milestone 3)"
-        />
+        <div className={styles.logo}>
+          <BrandLogo variant="white" width={178} />
+        </div>
         <div className={styles.topRight}>
           <Menu positioning="below-end">
             <MenuTrigger disableButtonEnhancement>
               <Button
                 appearance="transparent"
                 className={styles.userButton}
-                icon={<Avatar name={user.displayName} size={32} color="neutral" />}
+                icon={<Avatar name={user.displayName} size={32} initials={{ className: styles.userAvatar }} />}
                 iconPosition="before"
               >
                 <span className={styles.userText}>
@@ -200,6 +214,16 @@ export function AppShell() {
           </Menu>
         </div>
       </header>
+
+      <div className={styles.searchBar}>
+        <SearchBox
+          className={styles.search}
+          placeholder="Search tickets by number or title"
+          aria-label="Search tickets"
+          disabled
+          title="Ticket search arrives with the ticket list (Milestone 3)"
+        />
+      </div>
 
       <nav className={styles.sidebar} aria-label="Main navigation">
         <Button
