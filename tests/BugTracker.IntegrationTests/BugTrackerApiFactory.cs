@@ -24,6 +24,7 @@ public sealed class BugTrackerApiFactory : WebApplicationFactory<Program>
 
     private readonly string? _sqlServer = BuildSqlServerConnectionString();
     private readonly SqliteConnection _sqlite = new("DataSource=:memory:");
+    private bool _dropped;
     private readonly string _files = Path.Combine(Path.GetTempPath(), "bugtracker-tests", Guid.NewGuid().ToString("N"));
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -66,12 +67,17 @@ public sealed class BugTrackerApiFactory : WebApplicationFactory<Program>
         return client;
     }
 
+    public override async ValueTask DisposeAsync()
+    {
+        await DropSqlServerDatabaseAsync();
+        await base.DisposeAsync();
+    }
+
     protected override void Dispose(bool disposing)
     {
-        if (disposing && _sqlServer is not null)
+        if (disposing)
         {
-            using var scope = Services.CreateScope();
-            scope.ServiceProvider.GetRequiredService<BugTrackerDbContext>().Database.EnsureDeleted();
+            DropSqlServerDatabaseAsync().AsTask().GetAwaiter().GetResult();
         }
 
         base.Dispose(disposing);
@@ -83,6 +89,20 @@ public sealed class BugTrackerApiFactory : WebApplicationFactory<Program>
                 Directory.Delete(_files, recursive: true);
             }
         }
+    }
+
+    /// <summary>Drops this factory's SQL Server database with its own context, so it works whatever state the host is in.</summary>
+    private async ValueTask DropSqlServerDatabaseAsync()
+    {
+        if (_sqlServer is null || _dropped)
+        {
+            return;
+        }
+
+        _dropped = true;
+        var options = new DbContextOptionsBuilder<BugTrackerDbContext>().UseSqlServer(_sqlServer).Options;
+        await using var db = new BugTrackerDbContext(options);
+        await db.Database.EnsureDeletedAsync();
     }
 
     private static string? BuildSqlServerConnectionString()
