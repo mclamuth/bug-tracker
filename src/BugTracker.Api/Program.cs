@@ -47,17 +47,18 @@ if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
     await scope.ServiceProvider.GetRequiredService<BugTrackerDbContext>().Database.MigrateAsync();
 }
 
-app.UseExceptionHandler();
-app.UseStatusCodePages();
-
 if (app.Environment.IsDevelopment())
 {
+    // The developer exception page (on by default here) returns the exception as Problem Details.
     app.MapOpenApi().AllowAnonymous();
 }
 else
 {
+    app.UseExceptionHandler();
     app.UseHsts();
 }
+
+app.UseStatusCodePages();
 
 app.UseHttpsRedirection();
 

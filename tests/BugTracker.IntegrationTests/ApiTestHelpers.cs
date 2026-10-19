@@ -33,10 +33,20 @@ public static class ApiTestHelpers
         assigneeId,
     };
 
+    /// <summary>Like EnsureSuccessStatusCode, but the failure message includes the response body (the error details).</summary>
+    public static async Task EnsureOkAsync(this HttpResponseMessage response)
+    {
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"{(int)response.StatusCode} {response.StatusCode}: {body}", null, response.StatusCode);
+        }
+    }
+
     public static async Task<TicketDetailDto> CreateTicketAsync(this HttpClient client, object? body = null)
     {
         var response = await client.PostAsJsonAsync("/api/v1/tickets", body ?? NewDefect(), Json);
-        response.EnsureSuccessStatusCode();
+        await response.EnsureOkAsync();
         return (await response.Content.ReadFromJsonAsync<TicketDetailDto>(Json))!;
     }
 
@@ -58,7 +68,7 @@ public static class ApiTestHelpers
 
     public static async Task<TicketDetailDto> ReadTicketAsync(this HttpResponseMessage response)
     {
-        response.EnsureSuccessStatusCode();
+        await response.EnsureOkAsync();
         return (await response.Content.ReadFromJsonAsync<TicketDetailDto>(Json))!;
     }
 

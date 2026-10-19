@@ -29,10 +29,10 @@ public sealed class TicketListApiTests : IClassFixture<TicketListApiTests.Seeded
             Numbers["new"] = (await ken.CreateTicketAsync(NewDefect(title: "Receipt total is wrong"))).Number;
             Numbers["max"] = (await ken.CreateTicketAsync(NewDefect(assigneeId: SeedData.MaxCaber, title: "Session expires early"))).Number;
             Numbers["hue"] = (await ken.CreateTicketAsync(NewDefect(applicationId: 17, assigneeId: SeedData.HueChi, title: "Overtime rounds down"))).Number;
-            (await hue.MoveAsync(Numbers["hue"], StatusIds.InProgress)).EnsureSuccessStatusCode();
+            await (await hue.MoveAsync(Numbers["hue"], StatusIds.InProgress)).EnsureOkAsync();
             Numbers["elyse"] = (await elyse.CreateTicketAsync(NewDefect(title: "Search misses apostrophes"))).Number;
             Numbers["closed"] = (await ken.CreateTicketAsync(NewDefect(title: "Old printer issue"))).Number;
-            (await ken.MoveAsync(Numbers["closed"], StatusIds.WontFix, new { comment = "Retired printer.", resolution = "WontFix" })).EnsureSuccessStatusCode();
+            await (await ken.MoveAsync(Numbers["closed"], StatusIds.WontFix, new { comment = "Retired printer.", resolution = "WontFix" })).EnsureOkAsync();
             Numbers["enh"] = (await ken.CreateTicketAsync(new
             {
                 type = "Enhancement",

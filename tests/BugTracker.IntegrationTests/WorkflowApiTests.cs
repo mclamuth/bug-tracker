@@ -137,7 +137,7 @@ public sealed class WorkflowApiTests(BugTrackerApiFactory factory) : IClassFixtu
 
         foreach (var status in new[] { StatusIds.InProgress, StatusIds.ReadyForTest, StatusIds.Verified })
         {
-            (await max.MoveAsync(n, status)).EnsureSuccessStatusCode();
+            await (await max.MoveAsync(n, status)).EnsureOkAsync();
         }
         var closed = await (await max.MoveAsync(n, StatusIds.Closed)).ReadTicketAsync();
 
@@ -180,7 +180,7 @@ public sealed class WorkflowApiTests(BugTrackerApiFactory factory) : IClassFixtu
     {
         var ken = factory.CreateClientAs(SeedData.KenFukumoto);
         var n = (await ken.CreateTicketAsync()).Number;
-        (await ken.MoveAsync(n, StatusIds.WontFix, new { comment = "Not needed.", resolution = "WontFix" })).EnsureSuccessStatusCode();
+        await (await ken.MoveAsync(n, StatusIds.WontFix, new { comment = "Not needed.", resolution = "WontFix" })).EnsureOkAsync();
 
         var response = await ken.PutAsJsonAsync($"/api/v1/tickets/{n}/assignee", new { assigneeId = SeedData.MaxCaber }, Json);
 

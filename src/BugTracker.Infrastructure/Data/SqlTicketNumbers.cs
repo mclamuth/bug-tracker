@@ -1,5 +1,6 @@
 using BugTracker.Application;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace BugTracker.Infrastructure.Data;
 
@@ -13,9 +14,18 @@ public sealed class SqlTicketNumbers(BugTrackerDbContext db) : ITicketNumbers
     {
         if (db.Database.IsSqlServer())
         {
-            return await db.Database
-                .SqlQueryRaw<int>($"SELECT NEXT VALUE FOR [{BugTrackerDbContext.TicketNumberSequence}] AS [Value]")
-                .SingleAsync(ct);
+            // A plain command, not SqlQueryRaw: EF wraps raw queries it composes over in a derived table,
+            // and SQL Server doesn't allow NEXT VALUE FOR there.
+            var connection = db.Database.GetDbConnection();
+            if (connection.State != System.Data.ConnectionState.Open)
+            {
+                await db.Database.OpenConnectionAsync(ct);
+            }
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = $"SELECT NEXT VALUE FOR [{BugTrackerDbContext.TicketNumberSequence}]";
+            command.Transaction = db.Database.CurrentTransaction?.GetDbTransaction();
+            return Convert.ToInt32(await command.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture);
         }
 
         var max = await db.Tickets.MaxAsync(t => (int?)t.TicketNumber, ct);
