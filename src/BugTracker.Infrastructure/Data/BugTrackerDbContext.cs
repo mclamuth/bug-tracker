@@ -21,6 +21,20 @@ public sealed class BugTrackerDbContext(DbContextOptions<BugTrackerDbContext> op
     public DbSet<TicketHistory> TicketHistory => Set<TicketHistory>();
     public DbSet<EmailOutbox> EmailOutbox => Set<EmailOutbox>();
 
+    /// <summary>
+    /// Every DateTime is stored in UTC. SQL Server's datetime2 doesn't keep that, so mark values read back as UTC;
+    /// otherwise the API sends them without a "Z" and browsers would read them as local time.
+    /// </summary>
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+        configurationBuilder.Properties<DateTime?>().HaveConversion<UtcDateTimeConverter>();
+    }
+
+    private sealed class UtcDateTimeConverter() : Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<DateTime, DateTime>(
+        v => v.Kind == DateTimeKind.Local ? v.ToUniversalTime() : v,
+        v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var isSqlServer = Database.IsSqlServer();

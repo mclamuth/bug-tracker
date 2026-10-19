@@ -23,7 +23,10 @@ public sealed class BugTrackerApiFactory : WebApplicationFactory<Program>
     public const string SqlServerVariable = "BUGTRACKER_TEST_SQLSERVER";
 
     private readonly string? _sqlServer = BuildSqlServerConnectionString();
-    private readonly SqliteConnection _sqlite = new("DataSource=:memory:");
+    // A named in-memory database: each request gets its own connection (so parallel requests work, as the
+    // detail page's do), and this one stays open to keep the database alive for the factory's lifetime.
+    private readonly string _sqliteConnectionString = $"Data Source=bugtracker-{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
+    private SqliteConnection? _sqlite;
     private bool _dropped;
     private readonly string _files = Path.Combine(Path.GetTempPath(), "bugtracker-tests", Guid.NewGuid().ToString("N"));
 
@@ -42,8 +45,9 @@ public sealed class BugTrackerApiFactory : WebApplicationFactory<Program>
             {
                 services.RemoveAll<DbContextOptions<BugTrackerDbContext>>();
                 services.RemoveAll<IDbContextOptionsConfiguration<BugTrackerDbContext>>();
+                _sqlite ??= new SqliteConnection(_sqliteConnectionString);
                 _sqlite.Open();
-                services.AddDbContext<BugTrackerDbContext>(options => options.UseSqlite(_sqlite));
+                services.AddDbContext<BugTrackerDbContext>(options => options.UseSqlite(_sqliteConnectionString));
             }
 
             using var provider = services.BuildServiceProvider();
@@ -83,7 +87,7 @@ public sealed class BugTrackerApiFactory : WebApplicationFactory<Program>
         base.Dispose(disposing);
         if (disposing)
         {
-            _sqlite.Dispose();
+            _sqlite?.Dispose();
             if (Directory.Exists(_files))
             {
                 Directory.Delete(_files, recursive: true);

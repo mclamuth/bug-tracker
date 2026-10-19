@@ -132,4 +132,18 @@ public sealed class TicketListApiTests : IClassFixture<TicketListApiTests.Seeded
         Assert.Equal(HttpStatusCode.BadRequest, (await client.GetAsync("/api/v1/tickets?view=mine")).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await client.GetAsync("/api/v1/tickets?sort=colour")).StatusCode);
     }
+
+    [Fact]
+    public async Task Counts_match_each_quick_view()
+    {
+        var max = _factory.Api.CreateClientAs(SeedData.MaxCaber);
+        var elyse = _factory.Api.CreateClientAs(SeedData.ElyseOrris);
+
+        var forMax = (await max.GetFromJsonAsync<TicketViewCountsDto>("/api/v1/tickets/counts", Json))!;
+        var forElyse = (await elyse.GetFromJsonAsync<TicketViewCountsDto>("/api/v1/tickets/counts", Json))!;
+
+        Assert.Equal(new TicketViewCountsDto(Open: 5, Unassigned: 3, AssignedToMe: 1, ReportedByMe: 0, Closed: 1, All: 6), forMax);
+        Assert.Equal(0, forElyse.AssignedToMe);
+        Assert.Equal(1, forElyse.ReportedByMe);
+    }
 }

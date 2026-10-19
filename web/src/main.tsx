@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App'
 import { ApiError } from './api/client'
 import { AuthProvider } from './auth/AuthProvider'
+import { NotifyProvider } from './components/NotifyProvider'
 import './index.css'
 
 const queryClient = new QueryClient({
@@ -22,9 +23,11 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <FluentProvider theme={webLightTheme}>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <NotifyProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </NotifyProvider>
       </QueryClientProvider>
     </FluentProvider>
   </StrictMode>,

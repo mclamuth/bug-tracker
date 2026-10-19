@@ -28,7 +28,7 @@ src/
 tests/
   BugTracker.UnitTests/         workflow and seed rules, user provisioning
   BugTracker.IntegrationTests/  the real API over HTTP with an in-memory database
-web/                          React app
+web/                          React app (screens in web/src/tickets, shared pieces in web/src/components)
 infra/                        Bicep templates for test and prod
 docs/                         setup guides
 ```
@@ -41,6 +41,7 @@ All endpoints are under `/api/v1` and need sign-in. In development, send the hea
 | --- | --- | --- |
 | GET | `/me`, `/users`, `/applications`, `/lookups` | Signed-in user, team, applications, statuses and workflow |
 | GET | `/tickets` | List: `view` (open, unassigned, assigned-to-me, reported-by-me, closed, all), filters, `search`, `sort`, `direction`, `page`, `pageSize` |
+| GET | `/tickets/counts` | How many tickets each quick view holds |
 | POST | `/tickets` | Create (New, or Assigned if a developer is chosen) |
 | GET, PATCH | `/tickets/{number}` | Read; edit fields (send `rowVersion`) |
 | POST | `/tickets/{number}/transitions` | Change status with the comment, resolution or developer the move needs |
@@ -87,7 +88,7 @@ On a developer machine, the API applies new migrations when it starts. In Azure,
 
 1. **Foundation:** solution, database with the team and applications, development and Entra sign-in, app shell with the app launcher, CI, Azure templates. ✅
 2. **Data and core API:** tickets, comments with @mentions, attachments, status changes and assignment, history, queued emails. ✅
-3. **Core screens:** ticket list, new ticket form, ticket detail.
+3. **Core screens:** ticket list, new ticket form, ticket detail. ✅
 4. **Workflow and collaboration:** status dialogs, assignment, @mentions, attachments, Applications admin.
 5. **Email:** outbox, Microsoft Graph sending, templates.
 6. **Dashboard and go-live:** role-based My Work, polish, testing with the ICAs, production.

@@ -5,7 +5,6 @@ import { SignInPage } from './auth/SignInPage'
 import { AppShell } from './layout/AppShell'
 import { ApplicationsPage } from './pages/ApplicationsPage'
 import { MyWorkPage } from './pages/MyWorkPage'
-import { NewTicketPage, TicketsPage } from './pages/TicketsPage'
 
 const useStyles = makeStyles({
   center: { minHeight: '100vh', display: 'grid', placeItems: 'center', gap: '12px', textAlign: 'center' },
@@ -32,8 +31,16 @@ const routes = [
     element: <AppShell />,
     children: [
       { index: true, element: <MyWorkPage /> },
-      { path: 'tickets', element: <TicketsPage /> },
-      { path: 'tickets/new', element: <NewTicketPage /> },
+      // The ticket screens load on first visit, keeping the first download small.
+      { path: 'tickets', lazy: async () => ({ Component: (await import('./tickets/TicketListPage')).TicketListPage }) },
+      {
+        path: 'tickets/new',
+        lazy: async () => ({ Component: (await import('./tickets/NewTicketPage')).NewTicketPage }),
+      },
+      {
+        path: 'tickets/:number',
+        lazy: async () => ({ Component: (await import('./tickets/TicketDetailPage')).TicketDetailPage }),
+      },
       { path: 'applications', element: <ApplicationsPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],

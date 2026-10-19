@@ -22,6 +22,9 @@ public sealed record TicketListItemDto(
     DateTime CreatedAt,
     DateTime UpdatedAt);
 
+/// <summary>Ticket counts for each quick view: open, unassigned, assigned to me, reported by me, closed and all.</summary>
+public sealed record TicketViewCountsDto(int Open, int Unassigned, int AssignedToMe, int ReportedByMe, int Closed, int All);
+
 public sealed record TicketPageDto(IReadOnlyList<TicketListItemDto> Items, int TotalCount, int Page, int PageSize);
 
 /// <summary>The full ticket, with what the UI needs to show the next allowed status changes.</summary>

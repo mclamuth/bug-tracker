@@ -18,6 +18,11 @@ public static class TicketEndpoints
             .WithSummary("Search and filter tickets, with paging and sorting.")
             .Produces<TicketPageDto>();
 
+        api.MapGet("/tickets/counts", async (TicketService tickets, CancellationToken ct) =>
+            TypedResults.Ok(await tickets.CountsAsync(ct)))
+            .WithName("CountTickets")
+            .WithSummary("How many tickets each quick view holds (open, unassigned, assigned to me, reported by me, closed, all).");
+
         api.MapPost("/tickets", async (CreateTicketRequest request, TicketService tickets, CancellationToken ct) =>
             (await tickets.CreateAsync(request, ct)).ToHttp(t => TypedResults.Created($"/api/v1/tickets/{t.Number}", t)))
             .WithName("CreateTicket")
