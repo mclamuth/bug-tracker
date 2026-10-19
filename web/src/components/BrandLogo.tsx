@@ -1,9 +1,8 @@
 import { useState } from 'react'
 
 /**
- * The CTA logo. The image files are not in the repository yet; drop them into web/public/assets/
- * (cta-logo-blue.png for light backgrounds, cta-logo-white.png for the blue header).
- * Until then the logo simply doesn't show.
+ * The CTA logo, from web/public/assets/ (cta-logo-blue.png for light backgrounds,
+ * cta-logo-white.png for the blue header and emails). Hides itself if the file can't load.
  */
 export function BrandLogo({ variant, width }: { variant: 'blue' | 'white'; width: number }) {
   const [missing, setMissing] = useState(false)

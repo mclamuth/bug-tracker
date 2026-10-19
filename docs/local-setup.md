@@ -92,7 +92,7 @@ dotnet user-secrets set "ConnectionStrings:BugTracker" "Server=localhost,1433;Da
 | Sign-in page says it can't load the team | The API isn't running, or it's on a different port. Start the **api: run** task. |
 | "Port 5011 / 5173 is already in use" | Another copy is still running. Close the old terminal or stop the task. |
 | You want a clean database | Stop the API, then run `sqllocaldb stop MSSQLLocalDB` and delete the database with the mssql extension, or run `dotnet ef database drop --project src/BugTracker.Infrastructure --startup-project src/BugTracker.Api`. It's recreated on the next start. |
-| The CTA logo doesn't show | Put `cta-logo-blue.png` and `cta-logo-white.png` in `web/public/assets/`. |
+| The CTA logo doesn't show | Check that `web/public/assets/cta-logo-blue.png` exists (it's in the repository) and refresh the page. |
 
 ## How development sign-in stays safe
 
