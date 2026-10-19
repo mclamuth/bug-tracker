@@ -23,10 +23,10 @@ import {
   SignOut20Regular,
   TaskListLtr20Regular,
 } from '@fluentui/react-icons'
-import { useEffect } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router'
+import { useEffect, useState, type FormEvent } from 'react'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { ApiError } from '../api/client'
-import { useMe } from '../api/queries'
+import { useMe, useTicketCounts } from '../api/queries'
 import { roleLabel } from '../api/types'
 import { useAuth } from '../auth/authContext'
 import { BrandLogo } from '../components/BrandLogo'
@@ -64,12 +64,14 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorNeutralBackground1,
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
   },
+  searchForm: { width: 'min(520px, 48vw)' },
   search: {
-    width: 'min(520px, 48vw)',
+    width: '100%',
     maxWidth: 'none',
-    // Light grey field, as in the design, including while search is switched off.
+    // Light grey field, as in the design; white while typing.
     backgroundColor: tokens.colorNeutralBackground3,
     ':hover': { backgroundColor: tokens.colorNeutralBackground3 },
+    ':focus-within': { backgroundColor: tokens.colorNeutralBackground1 },
   },
   topRight: { justifySelf: 'end', paddingRight: '16px' },
   userButton: {
@@ -120,6 +122,7 @@ const useStyles = makeStyles({
       backgroundColor: tokens.colorBrandBackground,
     },
   },
+  navCount: { marginLeft: 'auto', fontSize: tokens.fontSizeBase200, color: tokens.colorNeutralForeground3 },
   sidebarFoot: {
     marginTop: 'auto',
     paddingTop: '16px',
@@ -142,6 +145,19 @@ export function AppShell() {
   const navigate = useNavigate()
   const { mode, signOut } = useAuth()
   const me = useMe()
+  const counts = useTicketCounts()
+  const { pathname } = useLocation()
+  const [search, setSearch] = useState('')
+
+  /** "BT-1042" opens that ticket; anything else searches all tickets by number, title and description. */
+  const onSearch = (e: FormEvent) => {
+    e.preventDefault()
+    const term = search.trim()
+    if (!term) return
+    const ticket = /^BT-?(\d{1,9})$/i.exec(term)
+    void navigate(ticket ? `/tickets/${ticket[1]}` : `/tickets?${new URLSearchParams({ view: 'all', search: term })}`)
+    setSearch('')
+  }
 
   // A stale development sign-in (e.g. the database was reset) comes back as 401: start over.
   useEffect(() => {
@@ -216,13 +232,15 @@ export function AppShell() {
       </header>
 
       <div className={styles.searchBar}>
-        <SearchBox
-          className={styles.search}
-          placeholder="Search tickets by number or title"
-          aria-label="Search tickets"
-          disabled
-          title="Ticket search arrives with the ticket list (Milestone 3)"
-        />
+        <form role="search" className={styles.searchForm} onSubmit={onSearch}>
+          <SearchBox
+            className={styles.search}
+            placeholder="Search tickets by number or title"
+            aria-label="Search all tickets"
+            value={search}
+            onChange={(_, d) => setSearch(d.value)}
+          />
+        </form>
       </div>
 
       <nav className={styles.sidebar} aria-label="Main navigation">
@@ -238,8 +256,17 @@ export function AppShell() {
         <NavLink to="/" end className={styles.navLink}>
           <Home20Regular /> My Work
         </NavLink>
-        <NavLink to="/tickets" end className={styles.navLink}>
+        <NavLink
+          to="/tickets"
+          // Ticket pages count as All Tickets, except the new ticket form (it has its own button).
+          className={({ isActive }) => `${styles.navLink}${isActive && pathname !== '/tickets/new' ? ' active' : ''}`}
+        >
           <TaskListLtr20Regular /> All Tickets
+          {counts.data && (
+            <span className={styles.navCount} title="Open tickets">
+              {counts.data.open}
+            </span>
+          )}
         </NavLink>
         <NavLink to="/applications" className={styles.navLink}>
           <Apps20Regular /> Applications

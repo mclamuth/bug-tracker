@@ -111,6 +111,23 @@ public sealed partial class TicketService(
         return new TicketPageDto(items, total, page, pageSize);
     }
 
+    /// <summary>How many tickets each quick view holds, for the tabs on the ticket list.</summary>
+    public async Task<TicketViewCountsDto> CountsAsync(CancellationToken ct)
+    {
+        var me = current.UserId;
+        var closed = await ClosedStatusIdsAsync(ct);
+        var all = db.Tickets.AsNoTracking();
+        var open = all.Where(t => !closed.Contains(t.StatusId));
+
+        return new TicketViewCountsDto(
+            Open: await open.CountAsync(ct),
+            Unassigned: await open.CountAsync(t => t.AssignedToId == null, ct),
+            AssignedToMe: await open.CountAsync(t => t.AssignedToId == me, ct),
+            ReportedByMe: await open.CountAsync(t => t.ReportedById == me, ct),
+            Closed: await all.CountAsync(t => closed.Contains(t.StatusId), ct),
+            All: await all.CountAsync(ct));
+    }
+
     private static IQueryable<Ticket>? Sort(IQueryable<Ticket> query, string? sort, string? direction)
     {
         var key = (sort ?? "updated").Trim().ToLowerInvariant();

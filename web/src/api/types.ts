@@ -58,13 +58,173 @@ export interface AuthConfigDto {
   apiScope: string | null
 }
 
-/** RFC 9457 Problem Details, as returned by the API on errors. */
+/** RFC 9457 Problem Details, as returned by the API on errors. Validation errors are keyed by camelCase field. */
 export interface ProblemDetails {
   type?: string
   title?: string
   status?: number
   detail?: string
+  errors?: Record<string, string[]>
 }
+
+// ---------- Tickets (src/BugTracker.Application/Tickets/TicketDtos.cs) ----------
+
+export type TicketType = 'Defect' | 'Enhancement'
+export type Severity = 'Critical' | 'High' | 'Medium' | 'Low'
+export type Priority = 'P1Urgent' | 'P2High' | 'P3Normal' | 'P4Low'
+export type TicketEnvironment = 'Production' | 'Test' | 'Development'
+export type Resolution = 'Fixed' | 'Implemented' | 'WontFix' | 'Duplicate' | 'CannotReproduce' | 'ByDesign'
+
+export interface PersonDto {
+  id: number
+  displayName: string
+  initials: string
+}
+
+export interface TicketListItemDto {
+  number: number
+  displayNumber: string
+  type: TicketType
+  title: string
+  applicationId: number
+  applicationName: string
+  severity: Severity | null
+  priority: Priority
+  statusId: number
+  statusName: string
+  assignee: PersonDto | null
+  reporter: PersonDto
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TicketPageDto {
+  items: TicketListItemDto[]
+  totalCount: number
+  page: number
+  pageSize: number
+}
+
+export interface TicketViewCountsDto {
+  open: number
+  unassigned: number
+  assignedToMe: number
+  reportedByMe: number
+  closed: number
+  all: number
+}
+
+export interface CommentDto {
+  id: number
+  author: PersonDto
+  body: string
+  mentions: PersonDto[]
+  createdAt: string
+  editedAt: string | null
+}
+
+export interface AttachmentDto {
+  id: number
+  fileName: string
+  contentType: string
+  sizeBytes: number
+  commentId: number | null
+  uploadedBy: PersonDto
+  uploadedAt: string
+}
+
+export interface HistoryEntryDto {
+  id: number
+  changedBy: PersonDto
+  changedAt: string
+  fieldName: string
+  oldValue: string | null
+  newValue: string | null
+}
+
+export interface TicketDetailDto {
+  number: number
+  displayNumber: string
+  type: TicketType
+  title: string
+  description: string
+  endUserName: string | null
+  stepsToReproduce: string | null
+  expectedResult: string | null
+  actualResult: string | null
+  environment: TicketEnvironment | null
+  severity: Severity | null
+  priority: Priority
+  applicationId: number
+  applicationName: string
+  statusId: number
+  statusName: string
+  isClosed: boolean
+  resolution: Resolution | null
+  duplicateOfNumber: number | null
+  assignee: PersonDto | null
+  reporter: PersonDto
+  /** yyyy-MM-dd */
+  dueDate: string | null
+  createdAt: string
+  updatedAt: string
+  closedAt: string | null
+  rowVersion: string
+  allowedTransitions: TransitionDto[]
+  comments: CommentDto[]
+  attachments: AttachmentDto[]
+}
+
+export interface CreateTicketRequest {
+  type: TicketType
+  applicationId: number | null
+  title: string
+  description: string
+  endUserName?: string | null
+  stepsToReproduce?: string | null
+  expectedResult?: string | null
+  actualResult?: string | null
+  environment?: TicketEnvironment | null
+  severity?: Severity | null
+  priority: Priority
+  assigneeId?: number | null
+}
+
+/** Only the fields sent are changed; rowVersion is the value from the last read. */
+export interface UpdateTicketRequest {
+  rowVersion: string
+  applicationId?: number
+  title?: string
+  description?: string
+  endUserName?: string | null
+  stepsToReproduce?: string | null
+  expectedResult?: string | null
+  actualResult?: string | null
+  environment?: TicketEnvironment | null
+  severity?: Severity | null
+  priority?: Priority
+  dueDate?: string | null
+}
+
+/** Filters, sort and page for the ticket list; every field maps to a query-string parameter of GET /tickets. */
+export interface TicketListParams {
+  view: TicketView
+  type?: TicketType
+  statusId?: number
+  applicationId?: number
+  assigneeId?: number
+  severity?: Severity
+  priority?: Priority
+  search?: string
+  sort?: TicketSort
+  direction?: 'asc' | 'desc'
+  page?: number
+  pageSize?: number
+}
+
+export type TicketView = 'open' | 'unassigned' | 'assigned-to-me' | 'reported-by-me' | 'closed' | 'all'
+export type TicketSort =
+  'number' | 'title' | 'application' | 'severity' | 'priority' | 'status' | 'assignee' | 'created' | 'updated'
 
 /** A person's roles, in the order the dashboard uses them. */
 export function roleLabel(user: Pick<UserDto, 'isDeveloper' | 'isIca' | 'isSupervisor'>): string {

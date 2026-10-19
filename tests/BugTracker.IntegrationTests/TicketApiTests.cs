@@ -172,4 +172,33 @@ public sealed class TicketApiTests(BugTrackerApiFactory factory) : IClassFixture
         Assert.Null(edited.Severity);
         Assert.Null(edited.Environment);
     }
+
+    [Fact]
+    public async Task Dates_read_back_from_the_database_are_marked_as_UTC()
+    {
+        var max = factory.CreateClientAs(SeedData.MaxCaber);
+        var created = await max.CreateTicketAsync();
+
+        // Read raw JSON, as the browser does: without a trailing Z it would be taken as local time.
+        using var json = await System.Text.Json.JsonDocument.ParseAsync(
+            await max.GetStreamAsync($"/api/v1/tickets/{created.Number}"));
+        var history = await max.GetFromJsonAsync<System.Text.Json.JsonElement>($"/api/v1/tickets/{created.Number}/history");
+
+        Assert.EndsWith("Z", json.RootElement.GetProperty("createdAt").GetString(), StringComparison.Ordinal);
+        Assert.EndsWith("Z", json.RootElement.GetProperty("updatedAt").GetString(), StringComparison.Ordinal);
+        Assert.EndsWith("Z", history[0].GetProperty("changedAt").GetString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task The_ticket_and_its_history_can_load_at_the_same_time()
+    {
+        // The detail page asks for both at once.
+        var max = factory.CreateClientAs(SeedData.MaxCaber);
+        var created = await max.CreateTicketAsync();
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 10).Select(i =>
+            max.GetAsync(i % 2 == 0 ? $"/api/v1/tickets/{created.Number}" : $"/api/v1/tickets/{created.Number}/history")));
+
+        Assert.All(responses, r => Assert.Equal(HttpStatusCode.OK, r.StatusCode));
+    }
 }

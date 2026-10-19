@@ -1,5 +1,4 @@
 import {
-  Avatar,
   Badge,
   makeStyles,
   MessageBar,
@@ -18,6 +17,7 @@ import {
 import { Apps20Regular, Open16Regular } from '@fluentui/react-icons'
 import { useApplications } from '../api/queries'
 import { PageHeader } from '../components/PageHeader'
+import { PersonAvatar } from '../components/PersonAvatar'
 import { usePageStyles } from '../components/pageStyles'
 
 const useStyles = makeStyles({
@@ -92,7 +92,7 @@ export function ApplicationsPage() {
                   <TableCell>
                     {app.defaultAssigneeName ? (
                       <span className={styles.person}>
-                        <Avatar name={app.defaultAssigneeName} size={24} />
+                        <PersonAvatar name={app.defaultAssigneeName} size={24} />
                         {app.defaultAssigneeName}
                       </span>
                     ) : (
