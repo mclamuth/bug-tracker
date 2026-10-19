@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BugTracker.Api/BugTracker.Api.csproj" />
+    <Project Path="src/BugTracker.Application/BugTracker.Application.csproj" />
+    <Project Path="src/BugTracker.Domain/BugTracker.Domain.csproj" />
+    <Project Path="src/BugTracker.Infrastructure/BugTracker.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BugTracker.IntegrationTests/BugTracker.IntegrationTests.csproj" />
+    <Project Path="tests/BugTracker.UnitTests/BugTracker.UnitTests.csproj" />
+  </Folder>
+</Solution>

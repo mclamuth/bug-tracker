@@ -1,0 +1,54 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "api: run",
+      "type": "shell",
+      "command": "dotnet run --project src/BugTracker.Api --launch-profile http",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "dotnet",
+        "pattern": { "regexp": "^__never__$" },
+        "background": {
+          "activelyBegins": true,
+          "beginsPattern": "Building",
+          "endsPattern": "Now listening on"
+        }
+      },
+      "presentation": { "group": "run", "panel": "dedicated" }
+    },
+    {
+      "label": "web: dev",
+      "type": "npm",
+      "script": "dev",
+      "path": "web",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": { "regexp": "^__never__$" },
+        "background": { "activelyBegins": true, "beginsPattern": "VITE", "endsPattern": "Local:" }
+      },
+      "presentation": { "group": "run", "panel": "dedicated" }
+    },
+    {
+      "label": "Run Bug Tracker",
+      "dependsOn": ["api: run", "web: dev"],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    },
+    {
+      "label": "test: all",
+      "type": "shell",
+      "command": "dotnet test && cd web && npm test",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "dotnet build",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}
