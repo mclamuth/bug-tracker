@@ -57,6 +57,10 @@ jobs:
           dotnet test tests/BugTracker.IntegrationTests --no-build --configuration Release
           --logger "trx" --results-directory TestResults/sqlserver
 
+      - name: Report failed tests
+        if: failure()
+        run: python3 .github/scripts/report-failed-tests.py TestResults
+
       - name: Check formatting
         run: dotnet format --verify-no-changes --no-restore
 
