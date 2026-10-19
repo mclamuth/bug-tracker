@@ -250,6 +250,8 @@ resource web 'Microsoft.Web/sites@2024-04-01' = {
         { name: 'AzureAd__TenantId', value: tenantId }
         { name: 'AzureAd__ClientId', value: apiClientId }
         { name: 'AzureAd__Audience', value: empty(apiClientId) ? '' : 'api://${apiClientId}' }
+        { name: 'App__BaseUrl', value: 'https://app-bugtracker-${suffix}.azurewebsites.net' }
+        { name: 'Storage__Mode', value: 'Blob' }
         { name: 'Storage__BlobEndpoint', value: storage.properties.primaryEndpoints.blob }
         { name: 'Storage__Container', value: attachments.name }
         { name: 'Email__Mode', value: 'Graph' }

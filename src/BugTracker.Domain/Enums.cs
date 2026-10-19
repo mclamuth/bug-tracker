@@ -44,6 +44,16 @@ public enum Resolution : byte
     ByDesign = 6,
 }
 
+/// <summary>Why a notification email is sent.</summary>
+public enum NotificationKind : byte
+{
+    NewTicket = 1,
+    Assigned = 2,
+    Mentioned = 3,
+    ReadyForTest = 4,
+    Reopened = 5,
+}
+
 /// <summary>Delivery state of a queued email.</summary>
 public enum EmailStatus : byte
 {

@@ -181,6 +181,11 @@ public class EmailOutbox
 {
     public long Id { get; set; }
     public int? TicketId { get; set; }
+    public Ticket? Ticket { get; set; }
+
+    /// <summary>Which email this is, so the sender can pick the right template.</summary>
+    public NotificationKind Kind { get; set; }
+
     public required string ToAddress { get; set; }
     public required string Subject { get; set; }
     public required string HtmlBody { get; set; }

@@ -1,5 +1,8 @@
 using BugTracker.Application;
+using BugTracker.Application.Notifications;
+using BugTracker.Application.Tickets;
 using BugTracker.Infrastructure.Data;
+using BugTracker.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,8 +25,26 @@ public static class DependencyInjection
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<BugTrackerDbContext>());
 
         services.AddSingleton<IClock, SystemClock>();
+        services.AddScoped<ITicketNumbers, SqlTicketNumbers>();
         services.AddScoped<DirectoryService>();
         services.AddScoped<UserProvisioning>();
+        services.AddScoped<TicketHistoryWriter>();
+        services.AddScoped<NotificationService>();
+        services.AddScoped<CommentService>();
+        services.AddScoped<AttachmentService>();
+        services.AddScoped<TicketService>();
+
+        services.Configure<AppOptions>(configuration.GetSection(AppOptions.SectionName));
+        services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
+        var storageMode = configuration.GetSection(StorageOptions.SectionName)["Mode"] ?? "Local";
+        if (string.Equals(storageMode, "Blob", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IAttachmentStorage, BlobAttachmentStorage>();
+        }
+        else
+        {
+            services.AddSingleton<IAttachmentStorage, LocalAttachmentStorage>();
+        }
 
         return services;
     }

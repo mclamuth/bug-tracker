@@ -144,8 +144,26 @@ public sealed class BugTrackerDbContext(DbContextOptions<BugTrackerDbContext> op
             e.Property(m => m.Subject).HasMaxLength(300);
             e.Property(m => m.LastError).HasMaxLength(2000);
             e.HasIndex(m => new { m.Status, m.CreatedAt });
+            e.HasOne(m => m.Ticket).WithMany().HasForeignKey(m => m.TicketId).OnDelete(DeleteBehavior.SetNull);
         });
 
         SeedData.Apply(modelBuilder);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        // SQL Server updates rowversion itself. Other databases (SQLite in tests) need a new token on
+        // every change so a stale edit is still caught.
+        if (!Database.IsSqlServer())
+        {
+            foreach (var entry in ChangeTracker.Entries<Ticket>())
+            {
+                if (entry.State is EntityState.Added or EntityState.Modified)
+                {
+                    entry.Entity.RowVersion = Guid.NewGuid().ToByteArray();
+                }
+            }
+        }
+        return base.SaveChangesAsync(cancellationToken);
     }
 }

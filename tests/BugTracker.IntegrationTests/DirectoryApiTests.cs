@@ -110,3 +110,15 @@ public sealed class DirectoryApiTests(BugTrackerApiFactory factory) : IClassFixt
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }
+
+public sealed class OpenApiTests(BugTrackerApiFactory factory) : IClassFixture<BugTrackerApiFactory>
+{
+    [Fact]
+    public async Task OpenApi_document_describes_the_ticket_endpoints()
+    {
+        var json = await factory.CreateClient().GetStringAsync("/openapi/v1.json");
+
+        Assert.Contains("\"/api/v1/tickets/{number}/transitions\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"/api/v1/attachments/{id}\"", json, StringComparison.Ordinal);
+    }
+}
