@@ -46,6 +46,20 @@ const useStyles = makeStyles({
   label: { color: tokens.colorNeutralForeground3 },
   value: { minWidth: 0 },
   control: { width: '100%' },
+  assignee: {
+    maxWidth: '100%',
+    padding: '3px 6px',
+    margin: '-3px -6px',
+    border: 'none',
+    borderRadius: tokens.borderRadiusMedium,
+    background: 'transparent',
+    fontFamily: 'inherit',
+    fontSize: 'inherit',
+    textAlign: 'left',
+    cursor: 'pointer',
+    ':hover': { backgroundColor: tokens.colorNeutralBackground1Hover },
+    ':focus-visible': { outline: `2px solid ${tokens.colorBrandStroke1}` },
+  },
   withIcon: { display: 'flex', alignItems: 'center', gap: '6px' },
   none: { color: tokens.colorNeutralForeground3, fontStyle: 'italic' },
   link: { color: tokens.colorBrandForeground1, fontWeight: tokens.fontWeightSemibold, textDecoration: 'none' },
@@ -78,7 +92,16 @@ const draftFrom = (t: TicketDetailDto): Draft => ({
 })
 
 /** The right-hand Details panel. The pencil switches the editable fields to inputs. */
-export function DetailsPanel({ ticket: t, onConflict }: { ticket: TicketDetailDto; onConflict: () => void }) {
+export function DetailsPanel({
+  ticket: t,
+  onConflict,
+  onAssign,
+}: {
+  ticket: TicketDetailDto
+  onConflict: () => void
+  /** Opens the assignment dialog; missing when the ticket can't change hands (Verified, Closed, Won't Fix). */
+  onAssign?: () => void
+}) {
   const page = usePageStyles()
   const styles = useStyles()
   const notify = useNotify()
@@ -148,7 +171,19 @@ export function DetailsPanel({ ticket: t, onConflict }: { ticket: TicketDetailDt
         </Row>
       )}
       <Row label="Assignee">
-        <PersonLabel person={t.assignee} />
+        {onAssign ? (
+          <button
+            type="button"
+            className={styles.assignee}
+            onClick={onAssign}
+            title={t.assignee ? 'Reassign' : 'Assign'}
+            aria-label={t.assignee ? `Assignee: ${t.assignee.displayName}. Reassign` : 'Unassigned. Assign'}
+          >
+            <PersonLabel person={t.assignee} />
+          </button>
+        ) : (
+          <PersonLabel person={t.assignee} />
+        )}
       </Row>
       <Row label="Application">
         {editing ? (

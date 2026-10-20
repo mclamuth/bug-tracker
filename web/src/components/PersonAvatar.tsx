@@ -1,4 +1,5 @@
 import { Avatar, makeStyles } from '@fluentui/react-components'
+import { initialsOf } from './initials'
 
 // Light blue with blue initials, as in the Figma design.
 const useStyles = makeStyles({
@@ -7,5 +8,7 @@ const useStyles = makeStyles({
 
 export function PersonAvatar({ name, initials, size }: { name: string; initials?: string; size: 24 | 32 }) {
   const styles = useStyles()
-  return <Avatar name={name} size={size} initials={{ children: initials, className: styles.initials }} />
+  return (
+    <Avatar name={name} size={size} initials={{ children: initials ?? initialsOf(name), className: styles.initials }} />
+  )
 }

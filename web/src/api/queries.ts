@@ -2,15 +2,18 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { apiFetch, apiSend } from './client'
 import type {
   ApplicationDto,
+  AssignRequest,
   AttachmentDto,
   CommentDto,
   CreateTicketRequest,
   HistoryEntryDto,
   LookupsDto,
+  SaveApplicationRequest,
   TicketDetailDto,
   TicketListParams,
   TicketPageDto,
   TicketViewCountsDto,
+  TransitionRequest,
   UpdateTicketRequest,
   UserDto,
 } from './types'
@@ -126,20 +129,112 @@ export function useUpdateTicket(number: number) {
   })
 }
 
-export function useAddComment(number: number) {
-  const client = useQueryClient()
+/** Change status: Start work, Ready for Test, Won't Fix, Reopen… */
+export function useTransitionTicket(number: number) {
+  const changed = useTicketChanged()
   return useMutation({
-    mutationFn: (body: string) => apiSend<CommentDto>(`/api/v1/tickets/${number}/comments`, 'POST', { body }),
-    onSuccess: () => {
-      void client.invalidateQueries({ queryKey: queryKeys.ticket(number) })
-      void client.invalidateQueries({ queryKey: ['tickets', 'list'] }) // last updated
-    },
+    mutationFn: (request: TransitionRequest) =>
+      apiSend<TicketDetailDto>(`/api/v1/tickets/${number}/transitions`, 'POST', request),
+    onSuccess: (ticket) => changed(ticket),
   })
 }
 
-/** Uploads one file to a ticket. */
-export function uploadAttachment(number: number, file: File): Promise<AttachmentDto> {
+/** Assign or reassign to a developer. */
+export function useAssignTicket(number: number) {
+  const changed = useTicketChanged()
+  return useMutation({
+    mutationFn: (request: AssignRequest) =>
+      apiSend<TicketDetailDto>(`/api/v1/tickets/${number}/assignee`, 'PUT', request),
+    onSuccess: (ticket) => changed(ticket),
+  })
+}
+
+/** After a comment or file changes: the ticket (and its history) and the list's "last updated" are out of date. */
+function useTicketContentChanged(number: number) {
+  const client = useQueryClient()
+  return () =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: queryKeys.ticket(number) }), // includes its history
+      client.invalidateQueries({ queryKey: ['tickets', 'list'] }),
+    ])
+}
+
+/** Adds a comment, then attaches any files to it. Resolves with the names of files that failed to upload. */
+export function useAddComment(number: number) {
+  const changed = useTicketContentChanged(number)
+  return useMutation({
+    mutationFn: async ({ body, files = [] }: { body: string; files?: File[] }) => {
+      const comment = await apiSend<CommentDto>(`/api/v1/tickets/${number}/comments`, 'POST', { body })
+      return { comment, failed: await uploadAll(number, files, comment.id) }
+    },
+    onSettled: changed,
+  })
+}
+
+export function useEditComment(number: number) {
+  const changed = useTicketContentChanged(number)
+  return useMutation({
+    mutationFn: ({ id, body }: { id: number; body: string }) =>
+      apiSend<CommentDto>(`/api/v1/comments/${id}`, 'PUT', { body }),
+    onSuccess: changed,
+  })
+}
+
+export function useDeleteComment(number: number) {
+  const changed = useTicketContentChanged(number)
+  return useMutation({
+    mutationFn: (id: number) => apiSend<void>(`/api/v1/comments/${id}`, 'DELETE'),
+    onSuccess: changed,
+  })
+}
+
+/** Uploads files to the ticket one at a time. Resolves with the names of any that failed. */
+export function useUploadAttachments(number: number) {
+  const changed = useTicketContentChanged(number)
+  return useMutation({
+    mutationFn: (files: File[]) => uploadAll(number, files),
+    onSettled: changed,
+  })
+}
+
+export function useDeleteAttachment(number: number) {
+  const changed = useTicketContentChanged(number)
+  return useMutation({
+    mutationFn: (id: number) => apiSend<void>(`/api/v1/attachments/${id}`, 'DELETE'),
+    onSuccess: changed,
+  })
+}
+
+/** Uploads one file to a ticket, optionally as part of a comment. */
+export function uploadAttachment(number: number, file: File, commentId?: number): Promise<AttachmentDto> {
   const form = new FormData()
   form.append('file', file)
+  if (commentId !== undefined) form.append('commentId', String(commentId))
   return apiFetch<AttachmentDto>(`/api/v1/tickets/${number}/attachments`, { method: 'POST', body: form })
+}
+
+async function uploadAll(number: number, files: File[], commentId?: number): Promise<string[]> {
+  const failed: string[] = []
+  for (const file of files) {
+    try {
+      await uploadAttachment(number, file, commentId)
+    } catch {
+      failed.push(file.name)
+    }
+  }
+  return failed
+}
+
+// ---------- Applications admin ----------
+
+/** Adds an application (no id) or saves changes to one. */
+export function useSaveApplication() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...request }: SaveApplicationRequest & { id?: number }) =>
+      id === undefined
+        ? apiSend<ApplicationDto>('/api/v1/applications', 'POST', request)
+        : apiSend<ApplicationDto>(`/api/v1/applications/${id}`, 'PUT', request),
+    onSuccess: () => void client.invalidateQueries({ queryKey: queryKeys.applications }),
+  })
 }
