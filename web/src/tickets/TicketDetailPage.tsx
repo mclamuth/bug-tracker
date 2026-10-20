@@ -12,19 +12,22 @@ import {
   Text,
   tokens,
 } from '@fluentui/react-components'
-import { ArrowLeft16Regular, Edit16Regular } from '@fluentui/react-icons'
+import { ArrowLeft16Regular, Checkmark16Regular, Edit16Regular, Warning16Regular } from '@fluentui/react-icons'
 import { useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 import { ApiError } from '../api/client'
-import { useTicket, useTicketHistory, useUpdateTicket } from '../api/queries'
+import { useTicket, useTicketHistory, useTransitionTicket, useUpdateTicket } from '../api/queries'
 import type { TicketDetailDto } from '../api/types'
 import { useNotify } from '../components/notifyContext'
 import { usePageStyles } from '../components/pageStyles'
 import { ActivityFeed } from './ActivityFeed'
+import { AssignDialog } from './AssignDialog'
 import { AttachmentList } from './AttachmentList'
 import { DetailsPanel } from './DetailsPanel'
-import { saveTicket } from './saveTicket'
+import { problemText, saveTicket, tryTicketChange } from './saveTicket'
+import { StatusDialog } from './StatusDialog'
 import { StatusBadge, TypeIcon } from './TicketBits'
+import { canAssign, ticketActions, type StatusDialogKind, type TicketAction } from './workflow'
 
 const useStyles = makeStyles({
   back: {
@@ -46,6 +49,20 @@ const useStyles = makeStyles({
     marginBottom: '16px',
   },
   heading: { flex: 1, minWidth: 0 },
+  actions: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '8px',
+    paddingTop: '2px',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+  },
+  actionError: {
+    flexBasis: '100%',
+    textAlign: 'right',
+    color: tokens.colorPaletteRedForeground1,
+    fontSize: tokens.fontSizeBase200,
+  },
   meta: {
     display: 'flex',
     alignItems: 'center',
@@ -105,6 +122,8 @@ const useStyles = makeStyles({
   notFound: { padding: '48px 24px', display: 'grid', justifyItems: 'center', gap: '10px', textAlign: 'center' },
 })
 
+type OpenDialog = { kind: 'assign' } | { kind: 'status'; dialog: StatusDialogKind } | null
+
 /** One ticket: what was reported, its files, the activity feed and the editable details. */
 export function TicketDetailPage() {
   const page = usePageStyles()
@@ -114,6 +133,7 @@ export function TicketDetailPage() {
   const ticket = useTicket(number)
   const history = useTicketHistory(number)
   const [conflict, setConflict] = useState(false)
+  const [dialog, setDialog] = useState<OpenDialog>(null)
 
   // Back to the list as it was left (filters, sort, page), when we came from it.
   const listSearch = (location.state as { listSearch?: string } | null)?.listSearch ?? ''
@@ -173,7 +193,12 @@ export function TicketDetailPage() {
       )}
 
       {/* Keyed by version, so a successful save or a reload closes any open edit. */}
-      <TicketHeader key={`h-${t.rowVersion}`} ticket={t} onConflict={() => setConflict(true)} />
+      <TicketHeader
+        key={`h-${t.rowVersion}`}
+        ticket={t}
+        onConflict={() => setConflict(true)}
+        onDialog={(d) => setDialog(d === 'assign' ? { kind: 'assign' } : { kind: 'status', dialog: d })}
+      />
 
       <div className={styles.layout}>
         <div className={mergeClasses(page.panel, styles.main)}>
@@ -201,13 +226,30 @@ export function TicketDetailPage() {
             </section>
           )}
 
-          <AttachmentList attachments={t.attachments} />
+          <AttachmentList ticketNumber={t.number} attachments={t.attachments} />
 
           <ActivityFeed ticket={t} history={history.data ?? []} historyLoading={history.isPending} />
         </div>
 
-        <DetailsPanel key={`d-${t.rowVersion}`} ticket={t} onConflict={() => setConflict(true)} />
+        <DetailsPanel
+          key={`d-${t.rowVersion}`}
+          ticket={t}
+          onConflict={() => setConflict(true)}
+          onAssign={canAssign(t.statusId) ? () => setDialog({ kind: 'assign' }) : undefined}
+        />
       </div>
+
+      {dialog?.kind === 'assign' && (
+        <AssignDialog ticket={t} onClose={() => setDialog(null)} onConflict={() => setConflict(true)} />
+      )}
+      {dialog?.kind === 'status' && (
+        <StatusDialog
+          kind={dialog.dialog}
+          ticket={t}
+          onClose={() => setDialog(null)}
+          onConflict={() => setConflict(true)}
+        />
+      )}
     </div>
   )
 }
@@ -222,8 +264,16 @@ function Compare({ title, text, actual = false }: { title: string; text: string 
   )
 }
 
-/** Type, number, title (editable in place), status and application. */
-function TicketHeader({ ticket: t, onConflict }: { ticket: TicketDetailDto; onConflict: () => void }) {
+/** Type, number, title (editable in place), status and application, with the next steps in the workflow. */
+function TicketHeader({
+  ticket: t,
+  onConflict,
+  onDialog,
+}: {
+  ticket: TicketDetailDto
+  onConflict: () => void
+  onDialog: (dialog: StatusDialogKind | 'assign') => void
+}) {
   const page = usePageStyles()
   const styles = useStyles()
   const notify = useNotify()
@@ -292,7 +342,59 @@ function TicketHeader({ ticket: t, onConflict }: { ticket: TicketDetailDto; onCo
           </Link>
         </div>
       </div>
+      <TicketActions ticket={t} onConflict={onConflict} onDialog={onDialog} />
     </header>
+  )
+}
+
+/** The workflow buttons for the ticket's status. One-click moves happen here; the rest open a dialog. */
+function TicketActions({
+  ticket: t,
+  onConflict,
+  onDialog,
+}: {
+  ticket: TicketDetailDto
+  onConflict: () => void
+  onDialog: (dialog: StatusDialogKind | 'assign') => void
+}) {
+  const styles = useStyles()
+  const notify = useNotify()
+  const transition = useTransitionTicket(t.number)
+  const actions = ticketActions(t)
+
+  const run = async (action: TicketAction) => {
+    if (action.kind === 'assign') return onDialog('assign')
+    if (action.kind === 'dialog') return onDialog(action.dialog)
+    const ok = await tryTicketChange(
+      () => transition.mutateAsync({ toStatusId: action.toStatusId, rowVersion: t.rowVersion }),
+      onConflict,
+    )
+    if (ok) notify(action.done)
+  }
+
+  if (actions.length === 0) return null
+  const error = problemText(transition.error)
+  return (
+    <div className={styles.actions} role="group" aria-label="Workflow">
+      {actions.map((action, i) => (
+        <Button
+          key={action.label}
+          appearance={i === 0 ? 'primary' : 'secondary'}
+          icon={
+            action.label === 'Mark Verified' ? (
+              <Checkmark16Regular />
+            ) : action.label === 'Reopen' && actions.length > 1 ? (
+              <Warning16Regular />
+            ) : undefined
+          }
+          disabled={transition.isPending}
+          onClick={() => void run(action)}
+        >
+          {action.label}
+        </Button>
+      ))}
+      {error && <span className={styles.actionError}>{error}</span>}
+    </div>
   )
 }
 

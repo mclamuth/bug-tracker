@@ -10,6 +10,15 @@ const useStyles = makeStyles({
   center: { minHeight: '100vh', display: 'grid', placeItems: 'center', gap: '12px', textAlign: 'center' },
 })
 
+function PageLoading() {
+  const styles = useStyles()
+  return (
+    <div className={styles.center}>
+      <Spinner label="Loading…" />
+    </div>
+  )
+}
+
 function NotFoundPage() {
   const styles = useStyles()
   const navigate = useNavigate()
@@ -29,6 +38,8 @@ const routes = [
   {
     path: '/',
     element: <AppShell />,
+    // Shown while a screen that loads on demand arrives, when the app is opened directly on it.
+    hydrateFallbackElement: <PageLoading />,
     children: [
       { index: true, element: <MyWorkPage /> },
       // The ticket screens load on first visit, keeping the first download small.

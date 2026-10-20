@@ -256,16 +256,25 @@ describe('ticket detail', () => {
     expect(screen.getByRole('button', { name: 'Reload' })).toBeInTheDocument()
   })
 
-  it('adds a comment', async () => {
+  it('adds a comment, with a teammate picked from the @mention list', async () => {
     const calls = detailApi((call) =>
-      call.method === 'POST' && call.path.endsWith('/comments') ? { status: 201, body: {} } : undefined,
+      call.method === 'POST' && call.path.endsWith('/comments') ? { status: 201, body: { id: 77 } } : undefined,
     )
     renderAt('/tickets/1042', routes)
-    await userEvent.type(await screen.findByRole('textbox', { name: 'Add a comment' }), 'Retested — looks good.')
+    const box = await screen.findByRole('combobox', { name: 'Add a comment' })
+    await userEvent.type(box, 'Retested, thanks @Ma')
+
+    const list = await screen.findByRole('listbox', { name: 'Mention a teammate' })
+    expect(within(list).getByRole('option', { name: /Max Caber/ })).toHaveAttribute('aria-selected', 'true')
+    await userEvent.keyboard('{Enter}')
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    await userEvent.type(box, '— looks good.')
     await userEvent.click(screen.getByRole('button', { name: 'Add comment' }))
 
     await waitFor(() => expect(calls.some((c) => c.path.endsWith('/comments'))).toBe(true))
-    expect(calls.find((c) => c.path.endsWith('/comments'))!.body).toEqual({ body: 'Retested — looks good.' })
+    expect(calls.find((c) => c.path.endsWith('/comments'))!.body).toEqual({
+      body: 'Retested, thanks @Max Caber — looks good.',
+    })
   })
 
   it('says so when the ticket doesn’t exist', async () => {

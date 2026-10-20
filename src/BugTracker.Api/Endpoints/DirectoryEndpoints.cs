@@ -26,6 +26,21 @@ public static class DirectoryEndpoints
             .WithName("GetApplications")
             .WithSummary("All applications with their default developer, launcher URL and open ticket count.");
 
+        api.MapPost("/applications", async (SaveApplicationRequest request, ApplicationService applications, CancellationToken ct) =>
+            (await applications.CreateAsync(request, ct)).ToHttp(a => TypedResults.Created($"/api/v1/applications/{a.Id}", a)))
+            .WithName("AddApplication")
+            .WithSummary("Add an application: name, description, default developer, launcher link and whether it's active.")
+            .Produces<ApplicationDto>(StatusCodes.Status201Created)
+            .ProducesValidationProblem();
+
+        api.MapPut("/applications/{id:int}", async (int id, SaveApplicationRequest request, ApplicationService applications, CancellationToken ct) =>
+            (await applications.UpdateAsync(id, request, ct)).ToHttp())
+            .WithName("UpdateApplication")
+            .WithSummary("Change an application. Switching one off hides it from new tickets and the launcher; its tickets stay.")
+            .Produces<ApplicationDto>()
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         api.MapGet("/lookups", async (DirectoryService directory, CancellationToken ct) =>
             TypedResults.Ok(await directory.GetLookupsAsync(ct)))
             .WithName("GetLookups")

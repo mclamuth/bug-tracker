@@ -206,6 +206,29 @@ export interface UpdateTicketRequest {
   dueDate?: string | null
 }
 
+export interface TransitionRequest {
+  toStatusId: number
+  comment?: string | null
+  resolution?: Resolution | null
+  duplicateOfNumber?: number | null
+  assigneeId?: number | null
+  rowVersion: string
+}
+
+export interface AssignRequest {
+  assigneeId: number
+  comment?: string | null
+  rowVersion: string
+}
+
+export interface SaveApplicationRequest {
+  name: string
+  description: string | null
+  defaultAssigneeId: number | null
+  launcherUrl: string | null
+  isActive: boolean
+}
+
 /** Filters, sort and page for the ticket list; every field maps to a query-string parameter of GET /tickets. */
 export interface TicketListParams {
   view: TicketView

@@ -27,6 +27,7 @@ public static class DependencyInjection
         services.AddSingleton<IClock, SystemClock>();
         services.AddScoped<ITicketNumbers, SqlTicketNumbers>();
         services.AddScoped<DirectoryService>();
+        services.AddScoped<ApplicationService>();
         services.AddScoped<UserProvisioning>();
         services.AddScoped<TicketHistoryWriter>();
         services.AddScoped<NotificationService>();
