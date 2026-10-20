@@ -157,7 +157,7 @@ public sealed class BugTrackerDbContext(DbContextOptions<BugTrackerDbContext> op
             e.Property(m => m.ToAddress).HasMaxLength(320);
             e.Property(m => m.Subject).HasMaxLength(300);
             e.Property(m => m.LastError).HasMaxLength(2000);
-            e.HasIndex(m => new { m.Status, m.CreatedAt });
+            e.HasIndex(m => new { m.Status, m.NextAttemptAt });
             e.HasOne(m => m.Ticket).WithMany().HasForeignKey(m => m.TicketId).OnDelete(DeleteBehavior.SetNull);
         });
 

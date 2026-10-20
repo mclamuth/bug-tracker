@@ -405,8 +405,8 @@ public sealed partial class TicketService(
         ticket.UpdatedAt = now;
 
         if (comment is not null) await comments.AddToTicketAsync(ticket, comment, ct);
-        if (ticket.AssignedToId is { } assignee && assignee != previousAssigneeId) await notify.AssignedAsync(ticket, assignee, me, ct);
-        if (req.ToStatusId == StatusIds.ReadyForTest) await notify.ReadyForTestAsync(ticket, me, ct);
+        if (ticket.AssignedToId is { } assignee && assignee != previousAssigneeId) await notify.AssignedAsync(ticket, assignee, me, comment, ct);
+        if (req.ToStatusId == StatusIds.ReadyForTest) await notify.ReadyForTestAsync(ticket, comment, me, ct);
         if (req.ToStatusId == StatusIds.Reopened) await notify.ReopenedAsync(ticket, comment, me, ct);
 
         return await SaveAndReturnAsync(number, ct);
@@ -452,7 +452,7 @@ public sealed partial class TicketService(
         await history.RecordChangesAsync(ticket, before, me, ct);
         ticket.UpdatedAt = clock.UtcNow;
         if (comment is not null) await comments.AddToTicketAsync(ticket, comment, ct);
-        if (changedHands) await notify.AssignedAsync(ticket, req.AssigneeId, me, ct);
+        if (changedHands) await notify.AssignedAsync(ticket, req.AssigneeId, me, comment, ct);
 
         return await SaveAndReturnAsync(number, ct);
     }

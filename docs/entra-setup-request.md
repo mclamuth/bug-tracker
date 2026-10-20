@@ -44,11 +44,31 @@ Please create two app registrations in the CTA tenant.
 ## 4. Notification mailbox
 
 - A shared mailbox: **bugtracker@cta.org** (display name "ISSD Bug Tracker"). Shared mailboxes need no license.
-- After the first deployment we'll send the **object ID of the app's managed identity** (`id-bugtracker-test` / `id-bugtracker-prod`). Please let that identity send mail as bugtracker@cta.org **and no other mailbox**, using Exchange Online RBAC for Applications:
+- After the first deployment we'll send the **client ID and object ID of the app's managed identity** (`id-bugtracker-test` / `id-bugtracker-prod`). Please let that identity send mail as bugtracker@cta.org **and no other mailbox**, using Exchange Online RBAC for Applications:
   - a management scope that matches only bugtracker@cta.org,
   - the *Application Mail.Send* role assigned to the identity's service principal with that scope.
 
   Please **don't** grant Mail.Send to the identity in Entra; that would let it send as anyone in the tenant.
+
+  The Exchange Online PowerShell for this, once per environment (test, then production):
+
+  ```powershell
+  Connect-ExchangeOnline
+
+  # The managed identity, as Exchange sees it (client ID = AppId, plus its object ID).
+  New-ServicePrincipal -AppId <client id> -ObjectId <object id> -DisplayName "ISSD Bug Tracker (test)"
+
+  # Only this mailbox (created once, shared by test and production).
+  New-ManagementScope -Name "BugTracker mailbox" -RecipientRestrictionFilter "PrimarySmtpAddress -eq 'bugtracker@cta.org'"
+
+  New-ManagementRoleAssignment -App <client id> -Role "Application Mail.Send" -CustomResourceScope "BugTracker mailbox"
+
+  # Check: InScope should be True for bugtracker@cta.org, and False for anyone else's mailbox.
+  Test-ServicePrincipalAuthorization -Identity <client id> -Resource bugtracker@cta.org
+  Test-ServicePrincipalAuthorization -Identity <client id> -Resource mlamuth@cta.org
+  ```
+
+  The app sends with Microsoft Graph (`POST /users/bugtracker@cta.org/sendMail`) and keeps a copy of every email in the mailbox's Sent Items.
 
 ## What we need back
 

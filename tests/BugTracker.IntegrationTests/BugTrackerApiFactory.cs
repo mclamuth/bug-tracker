@@ -30,6 +30,9 @@ public sealed class BugTrackerApiFactory : WebApplicationFactory<Program>
     private bool _dropped;
     private readonly string _files = Path.Combine(Path.GetTempPath(), "bugtracker-tests", Guid.NewGuid().ToString("N"));
 
+    /// <summary>Settings to apply on top of the test defaults, before the server starts.</summary>
+    public Dictionary<string, string?> Settings { get; } = [];
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
@@ -37,6 +40,11 @@ public sealed class BugTrackerApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("Database:MigrateOnStartup", "false");
         builder.UseSetting("Auth:Mode", "Development");
         builder.UseSetting("Storage:Mode", "Local");
+        builder.UseSetting("Email:Mode", "None"); // queue only; tests read the outbox
+        foreach (var (key, value) in Settings)
+        {
+            builder.UseSetting(key, value);
+        }
         builder.UseSetting("Storage:LocalPath", _files);
 
         builder.ConfigureServices(services =>

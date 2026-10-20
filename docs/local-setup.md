@@ -66,6 +66,14 @@ Prefer two terminals? Run `dotnet run --project src/BugTracker.Api --launch-prof
 
 To debug the API with breakpoints, stop the API task and press **F5** (**Debug API**).
 
+## Emails on your computer
+
+On a developer's machine nothing is sent. Each notification email is written as a web page in the **`.local/emails`** folder at the top of the repository (Git ignores it), named with the time, the recipient and the subject. Open one in VS Code with **Open with Live Preview**, or double-click it in File Explorer, to see exactly what the person would get.
+
+Emails go out a few seconds after the action that caused them, and nobody gets an email about something they did themselves. So to see Ken's "needs triage" email, create a ticket as anyone else.
+
+Emails that were queued before Milestone 5 used placeholder text, so they're marked as not sent and won't appear in the folder.
+
 ## 5. Run the tests
 
 ```powershell

@@ -11,6 +11,12 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Azure.Storage.Blobs" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The CTA logo, sent with each email as an inline image. -->
+    <EmbeddedResource Include="Email\cta-logo-email.png" LogicalName="BugTracker.Infrastructure.Email.cta-logo-email.png" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -33,6 +33,9 @@ param apiScope string = ''
 @description('Mailbox notifications are sent from.')
 param notificationMailbox string = 'bugtracker@cta.org'
 
+@description('When set, every email goes to this address instead of its real recipient (for trying out the Test environment).')
+param emailRedirectTo string = ''
+
 var isProd = environmentName == 'prod'
 var suffix = '${environmentName}-${uniqueString(resourceGroup().id)}'
 var tags = {
@@ -256,6 +259,7 @@ resource web 'Microsoft.Web/sites@2024-04-01' = {
         { name: 'Storage__Container', value: attachments.name }
         { name: 'Email__Mode', value: 'Graph' }
         { name: 'Email__FromMailbox', value: notificationMailbox }
+        { name: 'Email__RedirectAllTo', value: emailRedirectTo }
         { name: 'KeyVault__Uri', value: vault.properties.vaultUri }
       ]
       connectionStrings: [
@@ -274,4 +278,4 @@ output webAppUrl string = 'https://${web.properties.defaultHostName}'
 output sqlServerName string = sqlServer.name
 output appIdentityName string = appIdentity.name
 output appIdentityClientId string = appIdentity.properties.clientId
-output appIdentityPrincipalId string = appIdentity.properties.principalId
+output appIdentityPrincipalId string = appIdentity.properties.principalId // the object ID IT needs for Exchange (docs/entra-setup-request.md §4)

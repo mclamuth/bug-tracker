@@ -8,3 +8,7 @@ param sqlAdminGroupObjectId = '00000000-0000-0000-0000-000000000000'
 param apiClientId = ''
 param spaClientId = ''
 param apiScope = ''
+
+// While only ISSD's developers are trying Test, send every email to one person instead of the whole team.
+// Clear it (or set it to '') when the ICAs start testing, so everyone gets their own notifications.
+param emailRedirectTo = ''
