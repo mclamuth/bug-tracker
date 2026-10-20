@@ -81,7 +81,7 @@ const useStyles = makeStyles({
     ':hover:active': { backgroundColor: 'rgba(255,255,255,.2)', color: tokens.colorNeutralForegroundOnBrand },
   },
   userText: { display: 'grid', textAlign: 'left', lineHeight: '1.2', marginLeft: '6px' },
-  userRole: { color: 'rgba(255,255,255,.8)' },
+  userRole: { color: 'rgba(255,255,255,.92)' },
   userAvatar: { backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorBrandForeground1 },
   sidebar: {
     position: 'fixed',

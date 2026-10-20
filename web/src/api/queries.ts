@@ -3,6 +3,7 @@ import { apiFetch, apiSend } from './client'
 import type {
   ApplicationDto,
   AssignRequest,
+  DashboardDto,
   AttachmentDto,
   CommentDto,
   CreateTicketRequest,
@@ -26,6 +27,7 @@ export const queryKeys = {
   tickets: ['tickets'] as const,
   ticketList: (params: TicketListParams) => ['tickets', 'list', params] as const,
   ticketCounts: ['tickets', 'counts'] as const,
+  dashboard: ['tickets', 'dashboard'] as const,
   ticket: (number: number) => ['tickets', 'detail', number] as const,
   ticketHistory: (number: number) => ['tickets', 'detail', number, 'history'] as const,
 }
@@ -77,6 +79,15 @@ export function useTicketList(params: TicketListParams) {
   })
 }
 
+/** Everything on My Work. Refreshed when you come back to the tab and every couple of minutes while it's open. */
+export function useDashboard() {
+  return useQuery({
+    queryKey: queryKeys.dashboard,
+    queryFn: () => apiFetch<DashboardDto>('/api/v1/dashboard'),
+    refetchInterval: 2 * 60 * 1000,
+  })
+}
+
 export function useTicketCounts() {
   return useQuery({
     queryKey: queryKeys.ticketCounts,
@@ -107,6 +118,7 @@ function useTicketChanged() {
     if (ticket) client.setQueryData(queryKeys.ticket(ticket.number), ticket)
     void client.invalidateQueries({ queryKey: ['tickets', 'list'] })
     void client.invalidateQueries({ queryKey: queryKeys.ticketCounts })
+    void client.invalidateQueries({ queryKey: queryKeys.dashboard })
     void client.invalidateQueries({ queryKey: queryKeys.applications }) // open-ticket counts
     if (ticket) void client.invalidateQueries({ queryKey: queryKeys.ticketHistory(ticket.number) })
   }
@@ -156,6 +168,7 @@ function useTicketContentChanged(number: number) {
     Promise.all([
       client.invalidateQueries({ queryKey: queryKeys.ticket(number) }), // includes its history
       client.invalidateQueries({ queryKey: ['tickets', 'list'] }),
+      client.invalidateQueries({ queryKey: queryKeys.dashboard }),
     ])
 }
 

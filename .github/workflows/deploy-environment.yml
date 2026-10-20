@@ -1,0 +1,110 @@
+# Deploys one environment (test or production). Called by deploy.yml with the build from its first job.
+#
+# The GitHub environment of the same name holds:
+#   vars.AZURE_CLIENT_ID        client ID of "BugTracker GitHub Deploy" (federated credential, no secret)
+#   vars.AZURE_TENANT_ID        CTA's tenant
+#   vars.AZURE_SUBSCRIPTION_ID  the subscription with the resource groups
+#   vars.AZURE_RESOURCE_GROUP   rg-bugtracker-test or rg-bugtracker-prod
+# See docs/go-live.md.
+name: Deploy environment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: GitHub environment and Bicep parameter file (test or production)
+        type: string
+        required: true
+      parameters:
+        description: Bicep parameter file
+        type: string
+        required: true
+
+permissions:
+  id-token: write # sign in to Azure with the federated credential
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ steps.infra.outputs.url }}
+    concurrency:
+      group: deploy-${{ inputs.environment }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: release
+          path: release
+
+      - name: Sign in to Azure
+        uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Create or update the Azure resources
+        id: infra
+        run: |
+          result=$(az deployment group create \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --name "bugtracker-${{ github.run_number }}" \
+            --template-file infra/main.bicep \
+            --parameters "${{ inputs.parameters }}" \
+            --query properties.outputs --output json)
+          echo "$result"
+          echo "web=$(jq -r .webAppName.value <<<"$result")" >> "$GITHUB_OUTPUT"
+          echo "url=$(jq -r .webAppUrl.value <<<"$result")" >> "$GITHUB_OUTPUT"
+          echo "sql=$(jq -r .sqlServerName.value <<<"$result")" >> "$GITHUB_OUTPUT"
+          echo "identity=$(jq -r .appIdentityName.value <<<"$result")" >> "$GITHUB_OUTPUT"
+
+      - name: Let this runner reach Azure SQL
+        run: |
+          ip=$(curl -fsS https://api.ipify.org)
+          az sql server firewall-rule create --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --server "${{ steps.infra.outputs.sql }}" --name "github-${{ github.run_id }}" \
+            --start-ip-address "$ip" --end-ip-address "$ip" --output none
+
+      - name: Apply database migrations
+        # The deploy identity is a member of "BugTracker SQL Admins", the server's Entra administrator.
+        run: |
+          chmod +x release/efbundle
+          release/efbundle --connection "Server=tcp:${{ steps.infra.outputs.sql }}.database.windows.net,1433;Database=BugTracker;Authentication=Active Directory Default;Encrypt=True"
+
+      - name: Give the app's identity access to the database
+        run: |
+          if ! command -v sqlcmd >/dev/null || ! sqlcmd --version 2>&1 | grep -qi "sqlcmd: v"; then
+            curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc >/dev/null
+            sudo add-apt-repository -y "$(curl -fsSL https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list)"
+            sudo apt-get update -q && sudo apt-get install -y -q sqlcmd
+          fi
+          sqlcmd -S "tcp:${{ steps.infra.outputs.sql }}.database.windows.net,1433" -d BugTracker \
+            --authentication-method ActiveDirectoryDefault \
+            -v IDENTITY="${{ steps.infra.outputs.identity }}" -i infra/grant-app-access.sql
+
+      - name: Close the firewall again
+        if: always() && steps.infra.outputs.sql != ''
+        run: |
+          az sql server firewall-rule delete --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --server "${{ steps.infra.outputs.sql }}" --name "github-${{ github.run_id }}" --output none || true
+
+      - name: Deploy the app
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ steps.infra.outputs.web }}
+          package: release/app
+
+      - name: Check it's healthy
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS "${{ steps.infra.outputs.url }}/health"; then echo; echo "Healthy"; exit 0; fi
+            sleep 10
+          done
+          echo "::error::${{ steps.infra.outputs.url }}/health didn't report healthy within 5 minutes"
+          exit 1

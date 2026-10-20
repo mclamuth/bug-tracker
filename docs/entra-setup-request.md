@@ -31,7 +31,7 @@ Please create two app registrations in the CTA tenant.
 | Group | Members | Used for |
 | --- | --- | --- |
 | **BugTracker Users** | Max Caber, Bobby McDonald, Hue Chi, Shyamal Gurazada, Michael Lamuth, Elyse Orris, Josh Ralls, Val Guzman, Jeff Hugo, Greg Gee, Ken Fukumoto | Assign to the *ISSD Bug Tracker* enterprise app. Only members can sign in. |
-| **BugTracker SQL Admins** | Michael Lamuth plus whoever in IT manages Azure SQL | Entra administrator of the Azure SQL server. The server uses Entra authentication only, so there are no SQL passwords. |
+| **BugTracker SQL Admins** | Michael Lamuth, whoever in IT manages Azure SQL, and the **BugTracker GitHub Deploy** identity (section 3) | Entra administrator of the Azure SQL server. The server uses Entra authentication only, so there are no SQL passwords. The deploy identity applies database changes and gives the app's own identity read/write access (`infra/grant-app-access.sql`). |
 
 ## 3. Azure subscription access
 

@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<CommentService>();
         services.AddScoped<AttachmentService>();
         services.AddScoped<TicketService>();
+        services.AddScoped<DashboardService>();
 
         services.Configure<AppOptions>(configuration.GetSection(AppOptions.SectionName));
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));

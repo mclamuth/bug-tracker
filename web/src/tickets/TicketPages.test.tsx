@@ -277,6 +277,20 @@ describe('ticket detail', () => {
     })
   })
 
+  it('explains when the address isn’t a ticket number', async () => {
+    mockApi(...directory, get('/api/v1/tickets/1042', ticketDetail()), get('/api/v1/tickets/1042/history', []))
+    renderAt('/tickets/abc', routes)
+    expect(await screen.findByRole('heading', { name: '“abc” isn’t a ticket number' })).toBeInTheDocument()
+  })
+
+  it('opens /tickets/BT-1042', async () => {
+    mockApi(...directory, get('/api/v1/tickets/1042', ticketDetail()), get('/api/v1/tickets/1042/history', []))
+    renderAt('/tickets/BT-1042', routes)
+    expect(
+      await screen.findByRole('heading', { name: 'Mileage total doubles when a trip is edited' }),
+    ).toBeInTheDocument()
+  })
+
   it('says so when the ticket doesn’t exist', async () => {
     mockApi(...directory)
     renderAt('/tickets/999', routes)

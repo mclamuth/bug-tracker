@@ -29,6 +29,7 @@ import type { Priority, Severity, TicketEnvironment, TicketType } from '../api/t
 import { useNotify } from '../components/notifyContext'
 import { PageHeader } from '../components/PageHeader'
 import { usePageStyles } from '../components/pageStyles'
+import { usePageTitle } from '../components/usePageTitle'
 import { fileSize } from '../utils/format'
 import { checkFile, MAX_FILE_LABEL } from './attachments'
 import { environments, priorities, severities } from './labels'
@@ -149,6 +150,7 @@ export function NewTicketPage() {
   const developers = useUsers('developer')
   const supervisors = useUsers('supervisor')
   const create = useCreateTicket()
+  usePageTitle('New ticket')
   const queryClient = useQueryClient()
 
   const [type, setType] = useState<TicketType>('Defect')
@@ -544,7 +546,6 @@ function FileDrop({ onFiles }: { onFiles: (files: FileList | null) => void }) {
       <div
         role="button"
         tabIndex={0}
-        aria-label="Add attachments"
         className={mergeClasses(styles.dropzone, over && styles.dropzoneActive)}
         onClick={() => input.current?.click()}
         onKeyDown={(e) => {

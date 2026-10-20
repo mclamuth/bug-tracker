@@ -177,9 +177,9 @@ export function DetailsPanel({
             className={styles.assignee}
             onClick={onAssign}
             title={t.assignee ? 'Reassign' : 'Assign'}
-            aria-label={t.assignee ? `Assignee: ${t.assignee.displayName}. Reassign` : 'Unassigned. Assign'}
           >
             <PersonLabel person={t.assignee} />
+            <span className={page.srOnly}>{t.assignee ? ', reassign' : ', assign'}</span>
           </button>
         ) : (
           <PersonLabel person={t.assignee} />

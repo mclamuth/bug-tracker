@@ -26,6 +26,7 @@ import { useApplications, useLookups, useTicketCounts, useTicketList, useUsers }
 import type { TicketListItemDto, TicketListParams, TicketSort } from '../api/types'
 import { PageHeader } from '../components/PageHeader'
 import { usePageStyles } from '../components/pageStyles'
+import { usePageTitle } from '../components/usePageTitle'
 import { relativeTime } from '../utils/format'
 import { priorities, priorityLabel, severities, ticketTypes } from './labels'
 import { describeSort, hasFilters, nextSort, PAGE_SIZE, readListParams, views, writeListParams } from './listParams'
@@ -72,7 +73,7 @@ const useStyles = makeStyles({
     color: tokens.colorNeutralForeground2,
     fontSize: '11px',
   },
-  tabCountActive: { backgroundColor: '#d8e9f8', color: tokens.colorBrandForeground1 },
+  tabCountActive: { backgroundColor: '#d8e9f8', color: tokens.colorBrandForeground2 },
   filters: { padding: '16px', marginBottom: '16px' },
   filterRow: {
     display: 'grid',
@@ -186,6 +187,7 @@ export function TicketListPage() {
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const params = readListParams(searchParams)
+  usePageTitle(params.search ? `“${params.search}” · Tickets` : 'All Tickets')
 
   const list = useTicketList(params)
   const counts = useTicketCounts()
