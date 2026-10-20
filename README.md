@@ -55,7 +55,15 @@ All endpoints are under `/api/v1` and need sign-in. In development, send the hea
 
 To try it from VS Code, open [src/BugTracker.Api/BugTracker.Api.http](src/BugTracker.Api/BugTracker.Api.http) with the REST Client extension: it walks a ticket from report to closed. The full description is at `/openapi/v1.json` while the API runs in development.
 
-Emails are queued in the `EmailOutbox` table. Sending them, with designed templates, comes in Milestone 5.
+Emails are rendered from the template in `src/BugTracker.Application/Notifications/EmailTemplate.cs` and queued in the `EmailOutbox` table with the change that caused them. A background sender delivers them, with `Email:Mode` deciding how:
+
+| Mode | Where | What happens |
+| --- | --- | --- |
+| `Pickup` | Developer machines | Each email is written to `.local/emails` as a page you can open in a browser |
+| `Graph` | Test and Production | Sent through Microsoft 365 from bugtracker@cta.org, using the app's managed identity |
+| `None` | Automated tests | Queued only |
+
+A failed send is retried after 1, 5, 15, 60 and 240 minutes, then marked `Failed` with the reason in `LastError`. Emails still queued after 48 hours are dropped rather than sent late. Setting `Email:RedirectAllTo` sends every email to one address instead (for the Test environment).
 
 ## Everyday commands
 
@@ -91,5 +99,5 @@ On a developer machine, the API applies new migrations when it starts. In Azure,
 2. **Data and core API:** tickets, comments with @mentions, attachments, status changes and assignment, history, queued emails. ✅
 3. **Core screens:** ticket list, new ticket form, ticket detail. ✅
 4. **Workflow and collaboration:** status dialogs, assignment, @mentions, attachments, Applications admin. ✅
-5. **Email:** outbox, Microsoft Graph sending, templates.
+5. **Email:** outbox, Microsoft Graph sending, templates. ✅
 6. **Dashboard and go-live:** role-based My Work, polish, testing with the ICAs, production.

@@ -147,6 +147,9 @@ namespace BugTracker.Infrastructure.Data.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<DateTime?>("NextAttemptAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("SentAt")
                         .HasColumnType("datetime2");
 
@@ -170,7 +173,7 @@ namespace BugTracker.Infrastructure.Data.Migrations
 
                     b.HasIndex("TicketId");
 
-                    b.HasIndex("Status", "CreatedAt");
+                    b.HasIndex("Status", "NextAttemptAt");
 
                     b.ToTable("EmailOutbox", (string)null);
                 });

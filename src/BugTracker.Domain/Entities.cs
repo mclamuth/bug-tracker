@@ -191,6 +191,9 @@ public class EmailOutbox
     public required string HtmlBody { get; set; }
     public EmailStatus Status { get; set; } = EmailStatus.Pending;
     public int Attempts { get; set; }
+
+    /// <summary>When to try again after a failed attempt; null means as soon as possible.</summary>
+    public DateTime? NextAttemptAt { get; set; }
     public string? LastError { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? SentAt { get; set; }
