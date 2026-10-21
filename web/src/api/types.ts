@@ -206,6 +206,49 @@ export interface UpdateTicketRequest {
   dueDate?: string | null
 }
 
+// ---------- My Work (src/BugTracker.Application/Tickets/DashboardService.cs) ----------
+
+export interface DashboardCountsDto {
+  assignedToMe: number
+  myReopened: number
+  criticalOpen: number
+  openedThisWeek: number
+  readyForTest: number
+  reportedByMe: number
+  reopened: number
+  needsTriage: number
+  unassigned: number
+  openWithDeveloper: number
+  activeDevelopment: number
+}
+
+export interface WorkloadDto {
+  developer: PersonDto
+  assigned: number
+  inProgress: number
+  reopened: number
+}
+
+export interface ActivityDto {
+  kind: 'created' | 'status' | 'assignee' | 'comment'
+  by: PersonDto
+  at: string
+  ticketNumber: number
+  ticketTitle: string
+  oldValue: string | null
+  newValue: string | null
+}
+
+export interface DashboardDto {
+  counts: DashboardCountsDto
+  myActive: TicketListItemDto[]
+  readyForTest: TicketListItemDto[]
+  reportedByMe: TicketListItemDto[]
+  needsTriage: TicketListItemDto[]
+  workload: WorkloadDto[]
+  recentActivity: ActivityDto[]
+}
+
 export interface TransitionRequest {
   toStatusId: number
   comment?: string | null

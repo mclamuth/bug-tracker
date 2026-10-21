@@ -20,10 +20,12 @@ import { useTicket, useTicketHistory, useTransitionTicket, useUpdateTicket } fro
 import type { TicketDetailDto } from '../api/types'
 import { useNotify } from '../components/notifyContext'
 import { usePageStyles } from '../components/pageStyles'
+import { usePageTitle } from '../components/usePageTitle'
 import { ActivityFeed } from './ActivityFeed'
 import { AssignDialog } from './AssignDialog'
 import { AttachmentList } from './AttachmentList'
 import { DetailsPanel } from './DetailsPanel'
+import { parseTicketNumber } from './labels'
 import { problemText, saveTicket, tryTicketChange } from './saveTicket'
 import { StatusDialog } from './StatusDialog'
 import { StatusBadge, TypeIcon } from './TicketBits'
@@ -129,11 +131,14 @@ export function TicketDetailPage() {
   const page = usePageStyles()
   const styles = useStyles()
   const location = useLocation()
-  const number = Number(useParams().number)
+  // /tickets/1042, and also /tickets/BT-1042 if someone types the number as it's shown.
+  const param = useParams().number ?? ''
+  const number = parseTicketNumber(param) ?? 0
   const ticket = useTicket(number)
   const history = useTicketHistory(number)
   const [conflict, setConflict] = useState(false)
   const [dialog, setDialog] = useState<OpenDialog>(null)
+  usePageTitle(ticket.data ? `${ticket.data.displayNumber} ${ticket.data.title}` : `BT-${number}`)
 
   // Back to the list as it was left (filters, sort, page), when we came from it.
   const listSearch = (location.state as { listSearch?: string } | null)?.listSearch ?? ''
@@ -142,6 +147,20 @@ export function TicketDetailPage() {
       <ArrowLeft16Regular /> All Tickets
     </Link>
   )
+
+  if (number === 0) {
+    return (
+      <div className={page.page}>
+        {backLink}
+        <section className={mergeClasses(page.panel, styles.notFound)}>
+          <Text as="h1" size={500} weight="semibold">
+            “{param}” isn’t a ticket number
+          </Text>
+          <Text className={styles.none}>Ticket numbers look like BT-1042. Find the ticket from the ticket list.</Text>
+        </section>
+      </div>
+    )
+  }
 
   if (ticket.isPending) {
     return (

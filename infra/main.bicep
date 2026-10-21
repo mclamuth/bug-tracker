@@ -238,7 +238,7 @@ resource web 'Microsoft.Web/sites@2024-04-01' = {
     keyVaultReferenceIdentity: appIdentity.id
     siteConfig: {
       linuxFxVersion: 'DOTNETCORE|10.0'
-      alwaysOn: isProd
+      alwaysOn: true // keeps the email sender running; Basic (B1) and up support it
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
       http20Enabled: true

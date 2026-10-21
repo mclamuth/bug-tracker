@@ -39,6 +39,7 @@ import type { ApplicationDto, SaveApplicationRequest } from '../api/types'
 import { useNotify } from '../components/notifyContext'
 import { PageHeader } from '../components/PageHeader'
 import { usePageStyles } from '../components/pageStyles'
+import { usePageTitle } from '../components/usePageTitle'
 import { PersonAvatar } from '../components/PersonAvatar'
 
 const useStyles = makeStyles({
@@ -111,6 +112,7 @@ export function ApplicationsPage() {
   const save = useSaveApplication()
   const [sort, setSort] = useState<{ key: SortKey; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' })
   const [editing, setEditing] = useState<ApplicationDto | 'new' | null>(null)
+  usePageTitle('Applications')
 
   const sorted = [...(apps.data ?? [])].sort(
     (a, b) => compare(a, b, sort.key) * (sort.direction === 'asc' ? 1 : -1) || compare(a, b, 'name'),
@@ -175,7 +177,9 @@ export function ApplicationsPage() {
                     {c.label}
                   </TableHeaderCell>
                 ))}
-                <TableHeaderCell className={styles.headerCell} aria-label="Edit" style={{ width: 40 }} />
+                <TableHeaderCell className={styles.headerCell} style={{ width: 40 }}>
+                  <span className={page.srOnly}>Edit</span>
+                </TableHeaderCell>
               </TableRow>
             </TableHeader>
             <TableBody>

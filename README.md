@@ -5,6 +5,8 @@ Tracks defects and enhancement requests for the applications CTA's Information S
 - **Design doc:** data model, workflow, API and screens (shared separately)
 - **Run it locally:** [docs/local-setup.md](docs/local-setup.md)
 - **What IT needs to set up:** [docs/entra-setup-request.md](docs/entra-setup-request.md)
+- **Going live in Azure:** [docs/go-live.md](docs/go-live.md)
+- **ICA test plan:** [docs/uat-test-plan.md](docs/uat-test-plan.md)
 
 ## Stack
 
@@ -15,7 +17,8 @@ Tracks defects and enhancement requests for the applications CTA's Information S
 | Web app | React 19, TypeScript, Vite, Fluent UI React v9, TanStack Query, React Router |
 | Sign-in | Microsoft Entra ID (MSAL), or development sign-in on a developer's machine |
 | Hosting | Azure App Service, Azure SQL, Blob Storage, Key Vault, Application Insights ([infra/](infra)) |
-| CI | GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)) |
+| CI | GitHub Actions ([ci.yml](.github/workflows/ci.yml) on every pull request) |
+| Deployment | GitHub Actions ([deploy.yml](.github/workflows/deploy.yml)): Test on every merge to `main`, Production on approval |
 
 ## Repository layout
 
@@ -42,6 +45,7 @@ All endpoints are under `/api/v1` and need sign-in. In development, send the hea
 | GET | `/me`, `/users`, `/applications`, `/lookups` | Signed-in user, team, applications, statuses and workflow |
 | POST, PUT | `/applications`, `/applications/{id}` | Add or edit an application (name, description, default developer, launcher link, active) |
 | GET | `/tickets` | List: `view` (open, unassigned, assigned-to-me, reported-by-me, closed, all), filters, `search`, `sort`, `direction`, `page`, `pageSize` |
+| GET | `/dashboard` | Everything on My Work, for every role |
 | GET | `/tickets/counts` | How many tickets each quick view holds |
 | POST | `/tickets` | Create (New, or Assigned if a developer is chosen) |
 | GET, PATCH | `/tickets/{number}` | Read; edit fields (send `rowVersion`) |
@@ -100,4 +104,4 @@ On a developer machine, the API applies new migrations when it starts. In Azure,
 3. **Core screens:** ticket list, new ticket form, ticket detail. ✅
 4. **Workflow and collaboration:** status dialogs, assignment, @mentions, attachments, Applications admin. ✅
 5. **Email:** outbox, Microsoft Graph sending, templates. ✅
-6. **Dashboard and go-live:** role-based My Work, polish, testing with the ICAs, production.
+6. **Dashboard and go-live:** role-based My Work, polish, deployment pipeline, testing with the ICAs, production. Built; testing with the ICAs and going live wait on IT's setup ([docs/go-live.md](docs/go-live.md)).

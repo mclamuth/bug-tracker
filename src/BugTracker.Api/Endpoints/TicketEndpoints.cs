@@ -18,6 +18,11 @@ public static class TicketEndpoints
             .WithSummary("Search and filter tickets, with paging and sorting.")
             .Produces<TicketPageDto>();
 
+        api.MapGet("/dashboard", async (DashboardService dashboard, CancellationToken ct) =>
+            TypedResults.Ok(await dashboard.GetAsync(ct)))
+            .WithName("GetDashboard")
+            .WithSummary("Everything on My Work: card counts, my active work, Ready for Test, reported by me, needs triage, team workload and recent activity.");
+
         api.MapGet("/tickets/counts", async (TicketService tickets, CancellationToken ct) =>
             TypedResults.Ok(await tickets.CountsAsync(ct)))
             .WithName("CountTickets")
