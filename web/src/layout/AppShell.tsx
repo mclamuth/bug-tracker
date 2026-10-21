@@ -17,7 +17,7 @@ import {
 import {
   Add20Regular,
   Apps20Regular,
-  ChevronDown16Regular,
+  ChevronDown12Regular,
   Home20Regular,
   PersonSwap20Regular,
   SignOut20Regular,
@@ -32,7 +32,9 @@ import { useAuth } from '../auth/authContext'
 import { BrandLogo } from '../components/BrandLogo'
 import { AppLauncher } from './AppLauncher'
 
-const TOP_BAR = '64px'
+/** The top bar matches the CTA Training app's: 56px, CTA blue. */
+const TOP_BAR = '56px'
+const HEADER_BLUE = '#00609c'
 const SEARCH_BAR = '52px'
 const SIDEBAR = '232px'
 
@@ -45,11 +47,11 @@ const useStyles = makeStyles({
     display: 'grid',
     gridTemplateColumns: '1fr auto 1fr',
     alignItems: 'center',
-    backgroundColor: tokens.colorBrandBackground,
+    backgroundColor: HEADER_BLUE,
     color: tokens.colorNeutralForegroundOnBrand,
   },
   topLeft: { display: 'flex', alignItems: 'center', height: TOP_BAR },
-  appName: { padding: '0 18px', fontSize: tokens.fontSizeBase400, fontWeight: tokens.fontWeightSemibold },
+  appName: { padding: '0 20px', fontSize: '18px', lineHeight: '24px', fontWeight: tokens.fontWeightSemibold },
   logo: { display: 'flex', alignItems: 'center' },
   searchBar: {
     position: 'fixed',
@@ -73,16 +75,24 @@ const useStyles = makeStyles({
     ':hover': { backgroundColor: tokens.colorNeutralBackground3 },
     ':focus-within': { backgroundColor: tokens.colorNeutralBackground1 },
   },
-  topRight: { justifySelf: 'end', paddingRight: '16px' },
+  topRight: { justifySelf: 'end', paddingRight: '11px' },
   userButton: {
     color: tokens.colorNeutralForegroundOnBrand,
-    height: '48px',
+    height: '44px',
+    fontWeight: tokens.fontWeightRegular,
+    columnGap: '10px',
     ':hover': { backgroundColor: 'rgba(255,255,255,.12)', color: tokens.colorNeutralForegroundOnBrand },
     ':hover:active': { backgroundColor: 'rgba(255,255,255,.2)', color: tokens.colorNeutralForegroundOnBrand },
   },
-  userText: { display: 'grid', textAlign: 'left', lineHeight: '1.2', marginLeft: '6px' },
-  userRole: { color: 'rgba(255,255,255,.92)' },
-  userAvatar: { backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorBrandForeground1 },
+  userChevron: { marginLeft: '4px' },
+  menuWho: {
+    display: 'grid',
+    padding: '8px 10px 10px',
+    marginBottom: '4px',
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+  menuRole: { color: tokens.colorNeutralForeground3 },
+  userAvatar: { backgroundColor: tokens.colorNeutralBackground1, color: '#004a78' },
   sidebar: {
     position: 'fixed',
     inset: `${TOP_BAR} auto 0 0`,
@@ -189,7 +199,7 @@ export function AppShell() {
           <span className={styles.appName}>ISSD Bug Tracker</span>
         </div>
         <div className={styles.logo}>
-          <BrandLogo variant="white" width={178} />
+          <BrandLogo variant="white" width={194} />
         </div>
         <div className={styles.topRight}>
           <Menu positioning="below-end">
@@ -200,14 +210,15 @@ export function AppShell() {
                 icon={<Avatar name={user.displayName} size={32} initials={{ className: styles.userAvatar }} />}
                 iconPosition="before"
               >
-                <span className={styles.userText}>
-                  <Text weight="semibold">{user.displayName}</Text>
-                  <Caption1 className={styles.userRole}>{roleLabel(user)}</Caption1>
-                </span>
-                <ChevronDown16Regular />
+                {user.displayName}
+                <ChevronDown12Regular className={styles.userChevron} />
               </Button>
             </MenuTrigger>
             <MenuPopover>
+              <div className={styles.menuWho}>
+                <Text weight="semibold">{user.displayName}</Text>
+                <Caption1 className={styles.menuRole}>{roleLabel(user)}</Caption1>
+              </div>
               <MenuList>
                 {mode === 'Development' && (
                   <MenuItem

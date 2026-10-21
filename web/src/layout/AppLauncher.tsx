@@ -14,7 +14,7 @@ import {
   tokens,
   Tooltip,
 } from '@fluentui/react-components'
-import { AppGeneric24Regular, ArrowRight16Regular, Dismiss20Regular, GridDots24Regular } from '@fluentui/react-icons'
+import { AppGeneric24Regular, ArrowRight16Regular, Dismiss20Regular } from '@fluentui/react-icons'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useApplications } from '../api/queries'
@@ -24,12 +24,22 @@ const SEARCH_THRESHOLD = 9
 
 const useStyles = makeStyles({
   trigger: {
-    width: '52px',
-    height: '64px',
-    minWidth: '52px',
+    width: '55px',
+    height: '56px',
+    minWidth: '55px',
     borderRadius: 0,
     color: tokens.colorNeutralForegroundOnBrand,
-    borderRight: '1px solid rgba(255,255,255,.28)',
+    position: 'relative',
+    // A short divider between the launcher and the app name, as in the CTA Training app.
+    '::after': {
+      content: '""',
+      position: 'absolute',
+      right: 0,
+      top: '16px',
+      height: '24px',
+      width: '1px',
+      backgroundColor: 'rgba(255,255,255,.4)',
+    },
     ':hover': { backgroundColor: 'rgba(255,255,255,.12)', color: tokens.colorNeutralForegroundOnBrand },
     ':hover:active': { backgroundColor: 'rgba(255,255,255,.2)', color: tokens.colorNeutralForegroundOnBrand },
   },
@@ -78,6 +88,15 @@ const useStyles = makeStyles({
   },
 })
 
+/** Nine square dots, as in the CTA Training app's launcher. */
+function WaffleIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden focusable="false">
+      {[0, 6, 12].flatMap((y) => [0, 6, 12].map((x) => <rect key={`${x}-${y}`} x={x} y={y} width="4" height="4" />))}
+    </svg>
+  )
+}
+
 /** The waffle button in the top bar: shortcuts to CTA's internal applications. */
 export function AppLauncher() {
   const styles = useStyles()
@@ -93,7 +112,7 @@ export function AppLauncher() {
     <Popover open={open} onOpenChange={(_, data) => setOpen(data.open)} positioning="below-start" trapFocus>
       <PopoverTrigger disableButtonEnhancement>
         <Tooltip content="CTA applications" relationship="label">
-          <Button appearance="transparent" className={styles.trigger} icon={<GridDots24Regular />} />
+          <Button appearance="transparent" className={styles.trigger} icon={<WaffleIcon />} />
         </Tooltip>
       </PopoverTrigger>
       <PopoverSurface className={styles.surface} aria-label="CTA applications">
