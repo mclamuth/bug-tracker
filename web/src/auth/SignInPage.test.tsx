@@ -21,7 +21,7 @@ const team = [
     displayName: 'Michael Lamuth',
     email: 'mlamuth@cta.org',
     initials: 'ML',
-    isDeveloper: true,
+    isDeveloper: false,
     isIca: true,
     isSupervisor: false,
   },
@@ -79,14 +79,14 @@ function renderApp() {
 }
 
 describe('development sign-in', () => {
-  it('lists the team grouped by role, with Michael shown as both developer and ICA', async () => {
+  it('lists the team grouped by role', async () => {
     mockApi()
     renderApp()
 
     expect(await screen.findByRole('heading', { name: 'Developers' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'ICAs' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'ISSD Supervisor' })).toBeInTheDocument()
-    expect(screen.getByText('Developer · ICA')).toBeInTheDocument()
+    expect(screen.getByText('Michael Lamuth')).toBeInTheDocument()
   })
 
   it('signs in as the chosen person and shows the app shell', async () => {

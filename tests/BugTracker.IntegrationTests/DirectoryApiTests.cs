@@ -35,21 +35,21 @@ public sealed class DirectoryApiTests(BugTrackerApiFactory factory) : IClassFixt
     }
 
     [Fact]
-    public async Task Me_returns_the_signed_in_person_with_both_roles()
+    public async Task Me_returns_the_signed_in_person_and_their_roles()
     {
         var me = await factory.CreateClientAs(SeedData.MichaelLamuth).GetFromJsonAsync<UserDto>("/api/v1/me");
 
         Assert.NotNull(me);
         Assert.Equal("Michael Lamuth", me.DisplayName);
         Assert.Equal("ML", me.Initials);
-        Assert.True(me.IsDeveloper);
+        Assert.False(me.IsDeveloper);
         Assert.True(me.IsIca);
         Assert.False(me.IsSupervisor);
     }
 
     [Theory]
     [InlineData(null, 11)]
-    [InlineData("developer", 5)]
+    [InlineData("developer", 4)]
     [InlineData("ica", 6)]
     [InlineData("supervisor", 1)]
     public async Task Users_can_be_filtered_by_role(string? role, int expected)

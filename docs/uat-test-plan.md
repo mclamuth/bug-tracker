@@ -4,7 +4,7 @@ A walk through everything the ISSD Bug Tracker does, for the ICAs to try in the 
 
 **How to record results:** for each step, mark **Pass** or **Fail**. For a fail, note what you expected and what happened, and report it as a ticket in the Bug Tracker itself (application: *Bug Tracker*, if it's been added, or the closest match), with a screenshot.
 
-**Roles in the steps:** *ICA* is whoever is testing. *Developer* is one of Max, Bobby, Hue, Shyamal or Michael. *Supervisor* is Ken.
+**Roles in the steps:** *ICA* is whoever is testing. *Developer* is one of Max, Bobby, Hue or Shyamal. *Supervisor* is Ken.
 
 ## A. Signing in and finding your way
 
@@ -82,10 +82,9 @@ Two or three people, one ticket, in this order.
 | G1 | As an ICA, open My Work | Ready for Test, Reported by me and four matching cards. Each card opens the matching ticket list | |
 | G2 | As a developer, open My Work | Your work grouped Reopened → In Progress → Assigned, plus recent team activity | |
 | G3 | As Ken, open My Work | Needs triage (oldest first) with Triage and Won't Fix buttons, and each developer's workload | |
-| G4 | As Michael (developer and ICA) | A Developer / ICA switch at the top right that remembers your choice | |
-| G5 | **Other sections** at the bottom of My Work | Links to the other roles' queues | |
-| G6 | **Applications** → **Add application** with a launcher URL | It appears in the list and in the app launcher | |
-| G7 | Switch an application off | Its tickets stay, but it's no longer offered on **New Ticket** or in the launcher | |
+| G4 | **Other sections** at the bottom of My Work | Links to the other roles' queues | |
+| G5 | **Applications** → **Add application** with a launcher URL | It appears in the list and in the app launcher | |
+| G6 | Switch an application off | Its tickets stay, but it's no longer offered on **New Ticket** or in the launcher | |
 
 ## H. Emails
 
