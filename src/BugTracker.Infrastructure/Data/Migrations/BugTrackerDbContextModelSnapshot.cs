@@ -659,7 +659,7 @@ namespace BugTracker.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 8,
-                            DefaultAssigneeId = 5,
+                            DefaultAssigneeId = 4,
                             Description = "Executive Board documents and workflows",
                             IsActive = true,
                             Name = "Eboard"
@@ -683,7 +683,7 @@ namespace BugTracker.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 11,
-                            DefaultAssigneeId = 5,
+                            DefaultAssigneeId = 1,
                             Description = "Interim position requests and approvals",
                             IsActive = true,
                             Name = "Interim Positions"
@@ -740,7 +740,7 @@ namespace BugTracker.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 18,
-                            DefaultAssigneeId = 5,
+                            DefaultAssigneeId = 2,
                             Description = "Reduction in force case management",
                             IsActive = true,
                             Name = "RIF"
@@ -757,7 +757,7 @@ namespace BugTracker.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 20,
-                            DefaultAssigneeId = 5,
+                            DefaultAssigneeId = 3,
                             Description = "Vehicle tire requests and fulfillment",
                             IsActive = true,
                             Name = "Tire Request"
@@ -876,7 +876,7 @@ namespace BugTracker.Infrastructure.Data.Migrations
                             DisplayName = "Michael Lamuth",
                             Email = "mlamuth@cta.org",
                             IsActive = true,
-                            IsDeveloper = true,
+                            IsDeveloper = false,
                             IsIca = true,
                             IsSupervisor = false
                         },

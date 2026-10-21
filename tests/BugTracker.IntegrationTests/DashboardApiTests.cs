@@ -105,7 +105,7 @@ public sealed class DashboardApiTests : IClassFixture<DashboardApiTests.SeededFa
         Assert.Equal((1, 1, 0), (max.Assigned, max.InProgress, max.Reopened));
         var hue = ken.Workload.Single(w => w.Developer.Id == SeedData.HueChi);
         Assert.Equal((0, 0, 1), (hue.Assigned, hue.InProgress, hue.Reopened));
-        Assert.Equal(5, ken.Workload.Count); // every active developer, busiest first
+        Assert.Equal(4, ken.Workload.Count); // every active developer, busiest first
         Assert.Equal(SeedData.MaxCaber, ken.Workload[0].Developer.Id);
     }
 

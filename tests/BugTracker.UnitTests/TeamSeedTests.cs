@@ -5,19 +5,19 @@ namespace BugTracker.UnitTests;
 public sealed class TeamSeedTests
 {
     [Fact]
-    public void Team_has_five_developers_six_icas_and_one_supervisor()
+    public void Team_has_four_developers_six_icas_and_one_supervisor()
     {
-        Assert.Equal(5, SeedData.Users.Count(u => u.IsDeveloper));
+        Assert.Equal(4, SeedData.Users.Count(u => u.IsDeveloper));
         Assert.Equal(6, SeedData.Users.Count(u => u.IsIca));
         Assert.Equal(1, SeedData.Users.Count(u => u.IsSupervisor));
     }
 
     [Fact]
-    public void Michael_is_both_developer_and_ica()
+    public void Michael_is_an_ica_not_a_developer()
     {
         var michael = SeedData.Users.Single(u => u.Id == SeedData.MichaelLamuth);
 
-        Assert.True(michael.IsDeveloper);
+        Assert.False(michael.IsDeveloper);
         Assert.True(michael.IsIca);
     }
 
