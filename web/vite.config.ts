@@ -9,6 +9,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    // Lets a VS Code port-forwarding tunnel (https://<id>-5173.<region>.devtunnels.ms) reach the dev server,
+    // so the app can be shown to someone else while it runs here (README: "Showing it to someone else").
+    allowedHosts: ['.devtunnels.ms'],
     proxy: {
       '/api': { target: apiTarget, changeOrigin: true },
       '/health': { target: apiTarget, changeOrigin: true },

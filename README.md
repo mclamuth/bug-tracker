@@ -90,6 +90,17 @@ dotnet ef migrations add <DescriptiveName> --project src/BugTracker.Infrastructu
 
 On a developer machine, the API applies new migrations when it starts. In Azure, the deployment pipeline applies them; the app never does.
 
+### Showing it to someone else
+
+To demo the copy running on your machine (for example before Azure is set up), use VS Code's port forwarding:
+
+1. Start **Run Bug Tracker** and check <http://localhost:5173> works.
+2. **View → Open View… → Ports**, then **Forward a Port**, `5173`. Sign in with GitHub if asked.
+3. Right-click the row: **Port Visibility → Public**, then **Copy Local Address** (`https://<id>-5173.<region>.devtunnels.ms`) and send it.
+4. Afterwards, right-click the row: **Stop Forwarding Port**.
+
+While it's public, anyone with the address can use the development "sign in as…" picker and sees your local data, so share it only with the people you're demoing to. Your machine must stay awake and running the app.
+
 ## Conventions
 
 - **C#:** nullable reference types on, warnings are errors, analyzers at *latest-recommended*, formatting from `.editorconfig` (CI runs `dotnet format --verify-no-changes`). Package versions live in `Directory.Packages.props`.
